@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load bootstrap5 %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% load widget_tweaks %} <!-- pip install django-widget-tweaks -->
+
+<style>
+@media (max-width: 768px) {
+    .card {
+        max-width: 90%; 
+        margin-left: 2rem;
+    }
+}
+
+body {
+    font-family: 'Times New Roman', Times, serif
+}
+
+/* Ocultar las flechas en los inputs de numbers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+</style>
+
+<h2 class="text-center mt-4"> Para calcular tú rentabilidad ingresa la siguiente información </h2>
+
+<div class="d-flex justify-content-center">
+<form action="{% url 'bienvenida2' %}" method="post" class="mt-5 w-100" style="max-width: 600px;">
+
+    {% csrf_token %}
+    
+    <div class="card">
+        <div class="card-header">
+            <h4 class="text-center">Formulario de Rentabilidad</h4>
+        </div>
+        <div class="mb-3 mt-4" style="text-align: justify;">
+            <label>Renta Líquida Mensual</label>
+            {{ form_rentabi.Renta_Mensual|add_class:"form-control" }}
+          </div>
+          <div class="mb-3" style="text-align: justify;">
+            <label>Ahorro Estimado</label>
+            {{ form_rentabi.Ahorro_Estimado|add_class:"form-control" }}
+          </div>
+          <div class="mb-3" style="text-align: justify;">
+            <label>AFP</label>
+            {{ form_rentabi.AFP|add_class:"form-control" }}
+          </div>
+          <div class="mb-3" style="text-align: justify;">
+            <label>Multifondo</label>
+            {{ form_rentabi.Multifondo|add_class:"form-control" }}
+          </div>
+          <button type="submit" class="btn btn-primary" style="max-width: 25%; align-content: center;">Enviar</button>
+    </div>
+
+</form>
+</div>
+
+{% endblock %}
