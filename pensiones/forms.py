@@ -1,5 +1,5 @@
 from django import forms
-
+from datetime import date
 from django.core.exceptions import ValidationError
 
 
@@ -28,4 +28,16 @@ class Cal_Rentabi_Forms(forms.Form):
                                          validators=[validar_ahorro])
     AFP = forms.TypedChoiceField(choices= AFPS)
     Multifondo= forms.TypedChoiceField(choices=MULTIFONDOS)
-        
+
+
+
+class FechaForm(forms.Form):
+    fecha_inicial = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),  # Hace que el campo use un selector de fecha en HTML
+        initial=date(2000, 1, 1)  # Puedes cambiar esta fecha inicial por la que necesites
+    )
+    
+    fecha_actual = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),  # Usa un input tipo fecha
+        initial=date.today  # Usa la fecha actual automáticamente
+    )

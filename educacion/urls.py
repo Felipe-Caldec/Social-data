@@ -1,7 +1,9 @@
 
 from django.urls import path
-from .views import establecimientos_view
+from .views import niveles_view, matriculas_parvulo_view
 
 urlpatterns = [
-        path('establecimientos/', establecimientos_view, name='establecimientos')
+        path('niveles/', niveles_view, name='niveles'),
+        path('niveles/parvulo_matricula/', matriculas_parvulo_view, name='parvulo-matricula')
+
 ]

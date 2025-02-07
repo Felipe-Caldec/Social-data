@@ -1,0 +1,36 @@
+{%extends 'base.html'%}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Fechas y N</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Ingresar Fechas y N</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="fechas">Fechas (separadas por comas)</label>
+                {{ form.fechas }}
+            </div>
+            <div class="mb-3">
+                <label for="n">Número (N)</label>
+                {{ form.n }}
+            </div>
+            <button type="submit" class="btn btn-primary">Generar Tabla</button>
+        </form>
+
+        {% if tabla_html %}
+            <h3 class="mt-5">Tabla Generada</h3>
+            <div class="table-responsive">
+                {{ tabla_html|safe }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+{% endblock %}

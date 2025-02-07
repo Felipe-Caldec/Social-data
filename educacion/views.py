@@ -1,4 +1,7 @@
 from django.shortcuts import render
 
-def establecimientos_view (request):
-    return render (request, 'educacion/establecimientos.html')
+def niveles_view (request):
+    return render (request, 'educacion/niveles.html')
+
+def matriculas_parvulo_view (request):
+    return render (request, 'educacion/matriculas.html')
