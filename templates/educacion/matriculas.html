@@ -1,0 +1,61 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load static %}
+
+
+    <script>
+        function mostrarSubtemas(tema) {
+            let subtemas = {
+                "Por_año": ["2024", "2023", "2022"],
+                "Por_región": ["Física", "Química", "Biología"],
+                "Por_dependencia": ["Municipal", "Particular Subvencionado", "Particular Pagado", "JUNJI", "INTEGRA", "SLE"],
+                "Por_zona": ["Rural", "Urbano"]
+            };
+            
+            let listaSubtemas = document.getElementById("lista-subtemas");
+            listaSubtemas.innerHTML = "";  // Limpiar lista
+
+            if (tema in subtemas) {
+                subtemas[tema].forEach(subtema => {
+                    let li = document.createElement("li");
+                    li.classList.add("list-group-item", "list-group-item-action");
+                    li.textContent = subtema;
+                    li.onclick = function() {
+                        let baseUrl = "/educacion/niveles/parvulo_matricula"; // Define bien la base de la URL
+                        let url = `${baseUrl}/${subtema}/`; // Construye la URL correctamente
+                        console.log("Redirigiendo a:", url); // Depuración
+                        window.location.href = url;
+                    };
+                    listaSubtemas.appendChild(li);
+                });
+            }
+        }
+    </script>
+</head>
+    <h2>Seleccione un Tema</h2>
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="temaDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Temas
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="temaDropdown">
+            <li><a class="dropdown-item" href="#" onclick="mostrarSubtemas('Por_año')">Por año</a></li>
+            <li><a class="dropdown-item" href="#" onclick="mostrarSubtemas('Por_región')">Por región</a></li>
+            <li><a class="dropdown-item" href="#" onclick="mostrarSubtemas('Por_dependencia')">Por dependencia</a></li>
+            <li><a class="dropdown-item" href="#" onclick="mostrarSubtemas('Por_zona')">Por zona</a></li>
+        </ul>
+    </div>
+
+    <h3 class="mt-4">Categorías</h3>
+    <ul class="list-group" id="lista-subtemas">
+        <li class="list-group-item">Seleccione un tema para ver las categorías</li>
+    </ul>
+
+  
+</body>
+</html>
+
+
+
+
+
+{% endblock %}

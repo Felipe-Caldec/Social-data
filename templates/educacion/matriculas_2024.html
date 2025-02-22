@@ -1,0 +1,123 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load bootstrap5 %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriculas 2024</title>
+</head>
+<style>
+    body {
+        font-family: 'Times New Roman', Times, serif
+    }
+    table, span {
+    border-radius: 50px;
+    padding: 20px;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    }
+    th, td, span {
+    padding: 5px;
+    border: 1px solid;
+    }
+    h1 {
+    text-align: center;
+    margin-top: 2rem;
+
+    }
+   
+</style>
+<body>
+
+<h1>Matriculas </h1>
+<form method="get" class="ms-4 mb-5 d-flex gap-3">
+    <div>
+        {{ form.as_p }}
+    </div> 
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <button type="submit" name="exportar" value="1" class="btn btn-primary"> Exportar en Excel</button>
+</form>
+
+<table border="1" class="table table-striped">
+    <thead>
+        <tr>
+            <th class="table-dark">ID</th>
+            <th class="table-dark">Año</th>
+            <th class="table-dark">Mrun</th>
+            <th class="table-dark">Género</th>
+            <th class="table-dark">Establecimiento</th>
+            <th class="table-dark">Comuna </th>
+            <th class="table-dark">Región </th>
+            <th class="table-dark">Zona </th>
+            <th class="table-dark">Dependencia </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for estudiante in page_obj %}
+        <tr>
+            <td>{{ estudiante.id }}</td>
+            <td>{{ estudiante.agno }}</td>
+            <td>{{ estudiante.mrun }}</td>
+            {% if estudiante.gen_alu == 1 %}
+                <td>Hombre</td>
+            {% else %}
+                <td>Mujer</td>
+            {% endif %}
+            <td>{{ estudiante.nom_estab}}</td>
+            <td>{{ estudiante.nom_com_estab}}</td>
+            <td>{{ estudiante.nom_reg_estab}}</td>
+            {% if estudiante.rural_estab == 1 %}
+                <td>Rural</td>
+            {%else%}
+                <td>Urbano</td>
+            {% endif %}
+            {%if estudiante.dependencia == 1%}
+                <td>Municipal</td>
+            {% elif estudiante.dependencia == 2%}
+                <td>Particular Subvencionado</td>
+            {% elif estudiante.dependencia == 3%}
+                <td>Particular Pagado</td>
+            {% elif estudiante.dependencia == 4%}
+                <td>JUNJI</td>
+            {% elif estudiante.dependencia == 5%}
+                <td>INTEGRA</td>
+            {%else%}
+                <td>SLE</td>
+            {% endif %} 
+
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No hay registros disponibles.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="pagination" style="text-align: center; margin-top: 20px;">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?{{ query_params }}&page=1">&laquo; Primera</a> 
+            <a href="?{{ query_params }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+        
+        <span class="current">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?{{ query_params }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+            <a href="?{{ query_params }}&page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+
+
+</body>
+</html><br><br>
+
+
+{% endblock %}
