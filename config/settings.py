@@ -141,6 +141,7 @@ import os
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10 MB (ajústalo según sea necesario)
 IMPORT_EXPORT_IMPORT_FORM_CLASS = "import_export.forms.ImportForm"
 IMPORT_EXPORT_SKIP_PREVIEW = True

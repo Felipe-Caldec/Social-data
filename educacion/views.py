@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import matricula_parvulo
+from .models import matricula_parvulo, matricula_basica, matricula_media
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from .forms import Estudiantes_filtro
@@ -61,7 +61,7 @@ def estudiantes_tabla_view(request, subtema=None):
                                                      'subtema':subtema
                                                      })
 
-########################## GRAFICOS MATRICULA SEGUN GENERO #########################################
+##############################  GRAFICOS MATRICULA PARVULO  ############################################
 
 def grafico_matricula_parvulo_2021 (request):
 
@@ -224,17 +224,10 @@ def grafico_matricula_parvulo_2021 (request):
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
 
-    return render(request, 'educacion/graficos_2021.html', {'grafico_html': grafico_genero_zona_html,
+    return render(request, 'educacion/graficos_parvulo_2021.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
-
-
-
-
-####################################################################################
-
-
 
 def grafico_matricula_parvulo_2022(request):
 
@@ -397,13 +390,10 @@ def grafico_matricula_parvulo_2022(request):
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
 
-    return render(request, 'educacion/graficos_2022.html', {'grafico_html': grafico_genero_zona_html,
+    return render(request, 'educacion/graficos_parvulo_2022.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
-
-
-#####################################################################
 
 def grafico_matricula_parvulo_2023(request):
 
@@ -566,13 +556,10 @@ def grafico_matricula_parvulo_2023(request):
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
 
-    return render(request, 'educacion/graficos_2023.html', {'grafico_html': grafico_genero_zona_html,
+    return render(request, 'educacion/graficos_parvulo_2023.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
-
-##############################################################################
-
 
 def grafico_matricula_parvulo_2024(request):
 
@@ -735,13 +722,10 @@ def grafico_matricula_parvulo_2024(request):
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
 
-    return render(request, 'educacion/graficos_2024.html', {'grafico_html': grafico_genero_zona_html,
+    return render(request, 'educacion/graficos_parvulo_2024.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
-
-########################################################################################
-
 
 def grafico_matricula_parvulo_2020(request):
 
@@ -904,7 +888,7 @@ def grafico_matricula_parvulo_2020(request):
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
 
-    return render(request, 'educacion/graficos_2020.html', {'grafico_html': grafico_genero_zona_html,
+    return render(request, 'educacion/graficos_parvulo_2020.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
@@ -1036,3 +1020,1330 @@ def grafico_matricula_por_ano(request):
                                                                'grafico1_html':grafico1_html,
                                                                'grafico2_html': grafico2_html,
                                                                'region': region_seleccionada})
+
+
+#########################    GRAFICOS MATRICULA BASICA  ########################################### 
+
+def grafico_matricula_basica_2023 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        2: "Niñas/os",
+        3: "Adultas/os"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_basica.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_basica_2023.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_basica_2022 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        2: "Niñas/os",
+        3: "Adultas/os"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_basica.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_basica_2022.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_basica_2021 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        2: "Niñas/os",
+        3: "Adultas/os"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_basica.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_basica_2021.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_basica_2020 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        2: "Niñas/os",
+        3: "Adultas/os"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_basica.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_basica_2020.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+
+
+#########################    GRAFICOS MATRICULA MEDIA  ########################################### 
+
+def grafico_matricula_media_2023 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_ensenanza = {
+        5: "Jóvenes Científico-Humanísta",
+        6: "Adultos Científico-Humanísta",
+        7: "Jóvenes Técnico-Profesional",
+        8: "Adultos Técnico-Profesional",
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_media.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_ensenanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_media_2023.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_media_2022 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        5: "Jóvenes Científico-Humanísta",
+        6: "Adultos Científico-Humanísta",
+        7: "Jóvenes Técnico-Profesional",
+        8: "Adultos Técnico-Profesional",
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_media.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_media_2022.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_media_2021 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        5: "Jóvenes Científico-Humanísta",
+        6: "Adultos Científico-Humanísta",
+        7: "Jóvenes Técnico-Profesional",
+        8: "Adultos Técnico-Profesional",
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_media.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_media_2021.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_media_2020 (request):
+
+    categorias_genero = {
+        1: "Masculino",
+        2: "Femenino",
+    }
+
+    categorias_rural = {
+        0:"Urbano",
+        1:"Rural",
+    }
+
+    categorias_dependencia = {
+        1:"Municipal",
+        2:"Particular Subvencionado",
+        3:"Particular Pagado",
+        4:"Corporación de Administración Delegada",
+        5:"Servicio Local de Educación",
+    }
+
+    tipo_enseñanza = {
+        5: "Jóvenes Científico-Humanísta",
+        6: "Adultos Científico-Humanísta",
+        7: "Jóvenes Técnico-Profesional",
+        8: "Adultos Técnico-Profesional",
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+
+    datos = matricula_media.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
+    df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Zona','Cantidad']
+    
+
+    # Convertir "Género" a tipo string (para que no sea numérico)
+    conteo['Género'] = conteo['Género'].astype(str)
+    conteo['Zona'] = conteo['Zona'].astype(str)
+    conteo = conteo.dropna(subset=['Zona'])
+
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_zona = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_zona) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for zona in conteo['Zona'].unique():
+        df_filtrado = conteo[conteo['Zona'] == zona]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=zona,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        barmode='group',  # Agrupar barras
+        title="Gráfico género según zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  # Espaciado entre barras de diferentes grupos
+        bargroupgap=0.1,  # Espaciado dentro de un grupo
+        autosize= True
+    )
+
+### **Gráfico 2: Distribución género segun dependencia**
+
+    conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
+    conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_dependencia = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_dependencia['Porcentaje'] = (conteo_dependencia['Cantidad'] / totales_por_dependencia) * 100
+
+    fig2 = go.Figure()
+
+
+    for dependencia in conteo_dependencia['Dependencia'].unique():
+        df_filtrado = conteo_dependencia[conteo_dependencia['Dependencia'] == dependencia]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= dependencia, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según dependencia administrativa",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### **Gráfico 3: Distribución género segun tipo**
+
+    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig3 = go.Figure()
+
+
+    for tipo in conteo_tipo['Tipo'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
+
+    grafico_genero_zona_html = fig.to_html()
+    grafico_genero_dependencia_html = fig2.to_html()
+    grafico_genero_tipo_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_media_2020.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'region': region_seleccionada})
