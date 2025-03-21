@@ -1,0 +1,37 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load static %}
+{% load bootstrap5 %}
+
+<body>
+    <div class="container pt-4">
+        <!-- Lista de conceptos -->
+        <ul class="list-group w-100">
+          <!-- Primer concepto general -->
+          <li class="list-group-item w-100">
+            <b>Resultados Simce</b>
+            <ul class="list-group">
+              <li class="list-group-item"><a href="{% url 'graficos-sim-4'%}">Resultados 4° Básico</a></li>
+              <li class="list-group-item"><a href="{% url 'graficos-sim-2'%}">Resultados 2° Medio</a></li>
+            </ul>
+          </li>
+    
+          <!-- Segundo concepto general -->
+          <li class="list-group-item w-100">
+            <b>Resultados Índice de Desarrollo Personal y Social (IDPS)</b>
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{% url 'graficos-idps22-4'%}">Resultados 2022 4° Básico</a></li>
+                <li class="list-group-item"><a href="#">Resultados 2° Media</a></li>
+            </ul>
+          </li>
+    
+    
+      <!-- Agregar los scripts necesarios de Bootstrap -->
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+  
+
+
+{% endblock %}

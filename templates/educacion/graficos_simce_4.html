@@ -1,0 +1,83 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load bootstrap5 %}
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Género</title>
+<style>
+.grafico-container, .filtro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  /* Centrar horizontalmente */
+    justify-content: center; /* Centrar verticalmente (opcional) */
+    text-align: center; /* Centrar el texto */
+    width: 100%;
+    padding-top: 2rem;
+}
+</style>
+</head>
+<body> 
+    <!-- GRAFICO GENERO POR ZONA-->
+    <div class="filtro-container">
+        <h2 style="text-align: center;">Gráficos resultados Simce comparación 2022 vs 2023 </h2>
+
+
+        <label for="nom_reg" class="pt-2">Selecciona una región:</label>
+        <select id="nom_reg" name="nom_reg" onchange="filtrarPorRegion()">
+            <option value="">Todas</option>
+            <option value="Región metropolitana de santiago" {% if nom_reg == "Región metropolitana de santiago" %}selected{% endif %} >Región Metropolitana</option>
+            <option value="Región de Tarapacá" {% if nom_reg == "Región de Tarapacá" %} selected {% endif %}>Región de Tarapacá</option>
+            <option value="Región de Antofagasta"{% if nom_reg == "Región de Antofagasta" %} selected {% endif %}>Región de Antofagasta </option>
+            <option value="Región de Atacama"{% if nom_reg == "Región de Atacama" %} selected {% endif %}>Región de Atacama </option>
+            <option value="Región de Coquimbo"{% if nom_reg == "Región de Coquimbo" %} selected {% endif %}>Región de Coquimbo</option>
+            <option value="Región de Valparaíso"{% if nom_reg == "Región de Valparaíso" %} selected {% endif %}>Región de Valparaíso</option>
+            <option value="Región del Libertador Bernardo O'higgins"{% if nom_reg == "Región del Libertador Bernardo O'higgins" %} selected {% endif %}>Región del Libertador 
+                Gral. Bernardo OHiggins</option>
+            <option value="Región del Maule"{% if nom_reg == "Región del Maule" %} selected {% endif %}>Región del Maule </option>
+            <option value="Región del Biobío"{% if nom_reg == "Región del Biobío" %} selected {% endif %}>Región del Biobío</option>
+            <option value="Región de La Araucanía"{% if nom_reg == "Región de La Araucanía" %} selected {% endif %}>Región de la Araucanía</option>
+            <option value="Región de Los Lagos"{% if nom_reg == "Región de Los Lagos" %} selected {% endif %}>Región de Los Lagos</option>
+            <option value="Región de Aysén del General Carlos Ibañez del Campo"{% if nom_reg == "Región de Aysén del General Carlos Ibañez del Campo" %} selected {% endif %}>Región de Aysén del Gral. 
+                Carlos Ibáñez del Campo</option>
+            <option value="Región de Magallanes y de la Antártica Chilena"{% if nom_reg == "Región de Magallanes y de la Antártica Chilena" %} selected {% endif %}>Región de Magallanes y 
+                de la Antártica Chilena </option>
+            <option value="Región de los ríos"{% if nom_reg == "Región de los ríos" %} selected {% endif %}>Región de Los Ríos</option>
+            <option value="Región de arica y parinacota"{% if nom_reg == "Región de arica y parinacota" %} selected {% endif %}>Región de Arica y Parinacota</option>
+            <option value="Región de Ñuble"{% if nom_reg == "Región de Ñuble" %} selected {% endif %}>Región de Ñuble</option>
+        </select>
+    </div>
+
+    <div class="grafico-container">    
+    {{ grafico_html|safe }}
+    </div>
+    
+    <div class="mt-5" style="text-align: center;">
+    {% if mensaje_lectura %}
+        <p style="font-weight: bold; color: '{{color_lectura}}'">
+            <strong>Lenguaje:</strong> {{ mensaje_lectura }}
+        </p>
+    {% endif %}
+
+    {% if mensaje_matematicas %}
+        <p style="font-weight: bold; color: '{{color_matematicas}}'">
+             <strong>Matemáticas:</strong> {{ mensaje_matematicas }}
+        </p>
+    {% endif %}
+    </div>
+    <script>
+        function filtrarPorRegion() {
+            var nom_reg = document.getElementById("nom_reg").value;
+            window.location.href = "?nom_reg=" + nom_reg;
+        }
+    
+        // Mantener seleccionada la región actual
+        document.getElementById("nom_reg").value = "{{ nom_reg }}";
+    </script>
+</body>
+
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import matricula_parvulo, matricula_basica, matricula_media
+from .models import matricula_parvulo, matricula_basica, matricula_media, resultados_simce, resultados_simce_idps
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from django.core.exceptions import ValidationError
@@ -121,3 +121,27 @@ class MatriculaMediaAdmin(ImportExportModelAdmin):
     def get_skip_confirmation(self, request, *args, **kwargs):
         """Omite la confirmación antes de la importación."""
         return True
+    
+
+############## RESULTADOS SIMCE ##################################
+
+class ResultadosSimceResource(resources.ModelResource):
+    class Meta:
+        model = resultados_simce
+
+@admin.register(resultados_simce)
+class ProductoAdmin(ImportExportModelAdmin):
+    resource_class = ResultadosSimceResource
+    list_display = ('agno', 'nom_reg', 'grado')
+
+
+############## RESULTADOS SIMCE IDPS (INDICE DESARROLLO PERSONAL Y SOCIAL) ##################################
+
+class ResultadosSimceIDPSResource(resources.ModelResource):
+    class Meta:
+        model = resultados_simce_idps
+
+@admin.register(resultados_simce_idps)
+class ProductoAdmin(ImportExportModelAdmin):
+    resource_class = ResultadosSimceIDPSResource
+    list_display = ('agno', 'nom_reg_rbd', 'grado')

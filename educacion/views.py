@@ -1,14 +1,14 @@
 from django.shortcuts import render
-from .models import matricula_parvulo, matricula_basica, matricula_media
+from .models import matricula_parvulo, matricula_basica, matricula_media, resultados_simce, resultados_simce_idps
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from .forms import Estudiantes_filtro
 from .admin import MatriculaParvuloResource
 from django.db.models import Q
-import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
+import plotly.express as px
+
 
 def niveles_view (request):
     return render (request, 'educacion/niveles.html')
@@ -60,6 +60,14 @@ def estudiantes_tabla_view(request, subtema=None):
                                                      # Codifica los parámetros para la URL
                                                      'subtema':subtema
                                                      })
+
+def lista_view (request):
+    return render (request, 'educacion/lista_matriculas.html')
+
+def lista_simce_view (request):
+    return render (request, 'educacion/lista_simce.html')
+
+
 
 ##############################  GRAFICOS MATRICULA PARVULO  ############################################
 
@@ -1149,7 +1157,7 @@ def grafico_matricula_basica_2023 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -1313,7 +1321,7 @@ def grafico_matricula_basica_2022 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -1477,7 +1485,7 @@ def grafico_matricula_basica_2021 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -1641,7 +1649,7 @@ def grafico_matricula_basica_2020 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -1811,7 +1819,7 @@ def grafico_matricula_media_2023 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -1977,7 +1985,7 @@ def grafico_matricula_media_2022 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -2143,7 +2151,7 @@ def grafico_matricula_media_2021 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -2183,6 +2191,7 @@ def grafico_matricula_media_2021 (request):
                                                       'region': region_seleccionada})
 
 def grafico_matricula_media_2020 (request):
+
 
     categorias_genero = {
         1: "Masculino",
@@ -2309,7 +2318,7 @@ def grafico_matricula_media_2020 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -2347,3 +2356,395 @@ def grafico_matricula_media_2020 (request):
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
                                                       'region': region_seleccionada})
+
+
+############################  RESULTADOS SIMCE   #############################################
+       
+        # Determinar el mensaje basado en los valores de sigdif_lect_reg y sigdif_mate_reg
+
+def obtener_mensaje(valor):
+        if valor == 1:
+            return " El cambio interanual es estadísticamente significativo y positivo."
+        elif valor == -1:
+            return " El cambio interanual es estadísticamente significativo y negativo."
+        else:
+            return "No hay cambios significativos."
+        
+def grafico_resultados_simce_4 (request):
+
+    grado_dict = {
+        "4b": "4° básico"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg', None)
+
+    datos = resultados_simce.objects.filter(grado='4b')
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(nom_reg=region_seleccionada)
+
+    datos= datos.values('agno','prom_lect_reg','prom_mate_reg', 'grado', 'nom_reg', 'sigdif_lect_reg', 
+                        'sigdif_mate_reg')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['grado'] = df['grado'].map(grado_dict)
+
+        # Filtrar los datos para los años 2022 y 2023
+    df_2022 = df[df["agno"] == 2022]
+    df_2023 = df[df["agno"] == 2023]
+
+    # Si ambos años tienen datos, comparamos
+    if not df_2022.empty and not df_2023.empty:
+        # Obtener los valores de 2023
+        sigdif_lectura_2023 = df_2023["sigdif_lect_reg"].values[0]
+        sigdif_matematicas_2023 = df_2023["sigdif_mate_reg"].values[0]
+
+        # Obtener el mensaje de los cambios para 2023
+        mensaje_lectura = obtener_mensaje(sigdif_lectura_2023)
+        mensaje_matematicas = obtener_mensaje(sigdif_matematicas_2023)
+
+        # Aquí podrías también comparar los puntajes entre los años para incluir la lógica de comparación
+    else:
+        # Si faltan datos para 2022 o 2023
+        mensaje_lectura = "No se pueden comparar los datos"
+        mensaje_matematicas = "No se pueden comparar los datos"
+
+    fig = go.Figure()
+     # Obtener los años únicos en el dataset
+    años = sorted(df["agno"].unique())
+
+    for año in años:
+        df_año = df[df["agno"] == año]
+        
+        fig.add_trace(go.Bar(
+            x=["Lenguaje", "Matemáticas"],  # Agrupar por asignatura
+            y=[df_año["prom_lect_reg"].values[0], df_año["prom_mate_reg"].values[0]],  # Promedio para cada asignatura
+            name=f"Año {año}",  # Etiqueta en la leyenda
+            text=[df_año["prom_lect_reg"].values[0], df_año["prom_mate_reg"].values[0]],
+            textposition="auto"
+        ))
+
+    # Configurar el layout
+    fig.update_layout(
+        barmode="group",  # Agrupar barras por asignatura
+        title="Comparación de Puntajes por Asignatura y Año",
+        xaxis_title="Asignaturas",
+        yaxis=dict(title="Puntaje", tickformat=".2f"),
+        xaxis={'categoryorder': 'category ascending'},
+        bargap=0.2
+    )
+    grafico_genero_zona_html = fig.to_html()
+
+
+    return render(request, 'educacion/graficos_simce_4.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'nom_reg': region_seleccionada,
+                                                      'mensaje_lectura': mensaje_lectura,
+                                                      'mensaje_matematicas': mensaje_matematicas})
+
+def grafico_resultados_simce_2 (request):
+
+    grado_dict = {
+        "2m": "2° medio"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg', None)
+
+    datos = resultados_simce.objects.filter(grado='2m')
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(nom_reg=region_seleccionada)
+
+    datos= datos.values('agno','prom_lect_reg','prom_mate_reg', 'grado', 'nom_reg', 'sigdif_lect_reg', 
+                        'sigdif_mate_reg')
+    df = pd.DataFrame(datos)
+
+    # Reemplazar los números con los nombres de género
+    df['grado'] = df['grado'].map(grado_dict)
+
+    
+        # Filtrar los datos para los años 2022 y 2023
+    df_2022 = df[df["agno"] == 2022]
+    df_2023 = df[df["agno"] == 2023]
+
+    # Si ambos años tienen datos, comparamos
+    if not df_2022.empty and not df_2023.empty:
+        # Obtener los valores de 2023
+        sigdif_lectura_2023 = df_2023["sigdif_lect_reg"].values[0]
+        sigdif_matematicas_2023 = df_2023["sigdif_mate_reg"].values[0]
+
+        # Obtener el mensaje de los cambios para 2023
+        mensaje_lectura = obtener_mensaje(sigdif_lectura_2023)
+        mensaje_matematicas = obtener_mensaje(sigdif_matematicas_2023)
+
+        # Aquí podrías también comparar los puntajes entre los años para incluir la lógica de comparación
+    else:
+        # Si faltan datos para 2022 o 2023
+        mensaje_lectura = "No se pueden comparar los datos"
+        mensaje_matematicas = "No se pueden comparar los datos"
+
+    fig = go.Figure()
+     # Obtener los años únicos en el dataset
+    años = sorted(df["agno"].unique())
+
+    for año in años:
+        df_año = df[df["agno"] == año]
+        
+        fig.add_trace(go.Bar(
+            x=["Lenguaje", "Matemáticas"],  # Agrupar por asignatura
+            y=[df_año["prom_lect_reg"].values[0], df_año["prom_mate_reg"].values[0]],  # Promedio para cada asignatura
+            name=f"Año {año}",  # Etiqueta en la leyenda
+            text=[df_año["prom_lect_reg"].values[0], df_año["prom_mate_reg"].values[0]],
+            textposition="auto"
+        ))
+
+    # Configurar el layout
+    fig.update_layout(
+        barmode="group",  # Agrupar barras por asignatura
+        title="Comparación de Puntajes por Asignatura y Año",
+        xaxis_title="Asignaturas",
+        yaxis_title="Puntaje",
+        xaxis={'categoryorder': 'category ascending'},
+        bargap=0.2
+    )
+    grafico_genero_zona_html = fig.to_html()
+
+
+    return render(request, 'educacion/graficos_simce_2.html', {'grafico_html': grafico_genero_zona_html,
+                                                      'nom_reg': region_seleccionada,
+                                                      'mensaje_lectura': mensaje_lectura,
+                                                      'mensaje_matematicas': mensaje_matematicas})
+
+############################  RESULTADOS SIMCE IDPS  #############################################
+
+
+def grafico_resultados_idps22_4 (request):
+
+    regiones = {
+        "METROPOLITANA DE SANTIAGO": "Región Metropolitana",
+        "DE TARAPACÁ": "Región de Tarapacá",
+        "DE ANTOFAGASTA":"Región de Antofagasta",
+        "DE ATACAMA":"Región de Atacama",
+        "DE COQUIMBO":"Región de Coquimbo",
+        "DE VALPARAÍSO":"Región de Valparaíso",
+        "DEL LIBERTADOR BERNARDO O":"Región del Libertador Gral. Bernardo OHiggins",
+        "DEL MAULE": "Región del Maule",
+        "DEL BIOBÍO": "Región del Biobío",
+        "DE LA ARAUCANÍA":"Región de la Araucanía",
+        "DE LOS LAGOS": "Región de Los Lagos",
+        "DE AYSÉN DEL GENERAL CARL": "Región de Aysén del Gral. Carlos Ibáñez del Campo",
+        "DE MAGALLANES Y DE LA ANT":"Región de Magallanes y de la Antártica Chilena",
+        "DE LOS RÍOS": "Región de Los Ríos",
+        "DE ARICA Y PARINACOTA": "Región de Arica y Parinacota",
+        "DE ÑUBLE": "Región de Ñuble"
+    }
+
+    zona ={
+        1: "Urbano",
+        2: "Rural"
+    }
+    
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg_rbd', None)
+
+    datos = resultados_simce_idps.objects.filter(grado='4', agno=2022)
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(nom_reg_rbd=region_seleccionada)
+
+    datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom')
+    df = pd.DataFrame(datos)
+
+    df['nom_reg_rbd']=df['nom_reg_rbd'].map(regiones)
+
+    # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
+    df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
+
+
+    fig = go.Figure()
+    
+     # Agregar barras para cada tipo de indicador (AM, CC, HV, PF)
+    for indicador in df_promedios['ind'].unique():
+        df_filtrado = df_promedios[df_promedios['ind'] == indicador]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['nom_reg_rbd'],
+            y=df_filtrado['prom'],
+            name=indicador,
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),  # Formato con 2 decimales
+            textposition='inside' 
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        title="Promedio por Región según Tipo de Indicador",
+        xaxis_title="Región",
+        yaxis_title="Promedio",
+        barmode='group',
+        template="plotly_white"
+    )
+
+    # Gráfico 2 comparacion de resultados segun zona 
+
+    df_zona = df.groupby(['nom_reg_rbd', 'ind', 'cod_rural_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura con Plotly
+    fig2 = go.Figure()
+
+    # Agregar barras para cada combinación de indicador y ruralidad
+    for indicador in df_zona['ind'].unique():
+        for ruralidad in df_zona['cod_rural_rbd'].unique():
+            df_filtrado = df_zona[(df_zona['ind'] == indicador) & (df_zona['cod_rural_rbd'] == ruralidad)]
+            fig2.add_trace(go.Bar(
+                x=df_filtrado['cod_rural_rbd'].map(zona),
+                y=df_filtrado['prom'],
+                name=indicador,
+                text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+                textposition='inside'
+            ))
+
+    # Configurar el diseño del gráfico
+    fig2.update_layout(
+        title="Comparación de Indicadores por Región y Zona",
+        xaxis_title="Región",
+        yaxis_title="Promedio",
+        barmode='group',
+        template="plotly_white"
+    )
+
+    grafico_html =fig.to_html()
+    grafico_zona =fig2.to_html()
+
+    return render(request, 'educacion/graficos_idps22_4.html', {'grafico_html': grafico_html,
+                                                                'grafico_zona': grafico_zona,
+                                                      'nom_reg_rbd': region_seleccionada,})
+    
+def grafico_resultados_idps22_4(request):
+
+    regiones = {
+        "METROPOLITANA DE SANTIAGO": "Región Metropolitana",
+        "DE TARAPACÁ": "Región de Tarapacá",
+        "DE ANTOFAGASTA": "Región de Antofagasta",
+        "DE ATACAMA": "Región de Atacama",
+        "DE COQUIMBO": "Región de Coquimbo",
+        "DE VALPARAÍSO": "Región de Valparaíso",
+        "DEL LIBERTADOR BERNARDO O": "Región del Libertador Gral. Bernardo OHiggins",
+        "DEL MAULE": "Región del Maule",
+        "DEL BIOBÍO": "Región del Biobío",
+        "DE LA ARAUCANÍA": "Región de la Araucanía",
+        "DE LOS LAGOS": "Región de Los Lagos",
+        "DE AYSÉN DEL GENERAL CARL": "Región de Aysén del Gral. Carlos Ibáñez del Campo",
+        "DE MAGALLANES Y DE LA ANT": "Región de Magallanes y de la Antártica Chilena",
+        "DE LOS RÍOS": "Región de Los Ríos",
+        "DE ARICA Y PARINACOTA": "Región de Arica y Parinacota",
+        "DE ÑUBLE": "Región de Ñuble"
+    }
+
+    zona = {
+        1: "Urbano",
+        2: "Rural"
+    }
+
+    colores_indicadores = {
+        "AM": "blue",
+        "CC": "green",
+        "HV": "orange",
+        "PF": "red"
+    }
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg_rbd', None)
+
+    # Filtrar los datos por grado y año
+    datos = resultados_simce_idps.objects.filter(grado='4', agno=2022)
+    
+    # Filtrar por región si es necesario
+    if region_seleccionada:
+        datos = datos.filter(nom_reg_rbd=region_seleccionada)
+
+    # Convertir los datos a DataFrame
+    datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom')
+    df = pd.DataFrame(datos)
+
+    # Mapear las regiones
+    df['nom_reg_rbd'] = df['nom_reg_rbd'].map(regiones)
+
+    # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
+    df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por región
+    fig = go.Figure()
+
+    # Agregar barras para cada tipo de indicador
+    for indicador in df_promedios['ind'].unique():
+        df_filtrado = df_promedios[df_promedios['ind'] == indicador]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['nom_reg_rbd'],
+            y=df_filtrado['prom'],
+            name=indicador,
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            marker_color=colores_indicadores.get(indicador, 'grey')
+        ))
+
+    # Configurar el diseño del gráfico por región
+    fig.update_layout(
+        title="Promedio por Región según Tipo de Indicador",
+        xaxis_title="Región",
+        yaxis_title="Promedio",
+        barmode='group',
+        template="plotly_white"
+    )
+
+    # Gráfico 2 comparando resultados según zona (rural/urbano)
+    df_zona = df.groupby(['nom_reg_rbd', 'ind', 'cod_rural_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por zona
+    fig2 = go.Figure()
+
+    # Agregar barras para cada combinación de indicador y ruralidad
+    for indicador in df_zona['ind'].unique():
+        df_filtrado = df_zona[df_zona['ind'] == indicador]
+        
+        # Variable para asegurar que solo se agregue un nombre en la leyenda
+        legend_name_added = False
+
+        for ruralidad in df_filtrado['cod_rural_rbd'].unique():
+            df_zona_filtrada = df_filtrado[df_filtrado['cod_rural_rbd'] == ruralidad]
+
+            # Usar el nombre del indicador solo una vez
+            legend_name = indicador if not legend_name_added else ''
+            legend_name_added = True
+
+            fig2.add_trace(go.Bar(
+                x=df_zona_filtrada['nom_reg_rbd'],
+                y=df_zona_filtrada['prom'],
+                name=legend_name,  # Solo agrega el nombre del indicador una vez en la leyenda
+                text=df_zona_filtrada['prom'].apply(lambda x: f"{x:.2f}"),
+                textposition='inside',  # Coloca el texto dentro de la barra
+                marker_color=colores_indicadores.get(indicador, 'grey')
+            ))
+
+    # Configurar el diseño del gráfico por zona
+    fig2.update_layout(
+        title="Comparación de Indicadores por Región y Zona",
+        xaxis_title="Región",
+        yaxis_title="Promedio",
+        barmode='group',
+        template="plotly_white"
+    )
+
+    # Convertir ambos gráficos a HTML
+    grafico_html = fig.to_html()
+    grafico_zona = fig2.to_html()
+
+    return render(request, 'educacion/graficos_idps22_4.html', {
+        'grafico_html': grafico_html,
+        'grafico_zona': grafico_zona,
+        'nom_reg_rbd': region_seleccionada,
+    })

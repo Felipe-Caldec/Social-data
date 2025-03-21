@@ -71,4 +71,36 @@ class matricula_media (models.Model):
     COD_COM_ALU = models.IntegerField(null=True)
     NOM_COM_ALU = models.CharField(null=True)
     ENS = models.IntegerField(null=True)
-    
+
+class resultados_simce(models.Model):
+
+    agno= models.IntegerField()
+    grado = models.CharField()
+    cod_reg = models.IntegerField()
+    nom_reg = models.CharField()
+    prom_lect_reg = models.IntegerField()
+    prom_mate_reg = models.IntegerField()
+    dif_lect_reg = models.IntegerField()
+    dif_mate_reg = models.IntegerField()
+    sigdif_lect_reg = models.IntegerField()
+    sigdif_mate_reg = models.IntegerField()
+
+class resultados_simce_idps(models.Model):
+
+    rbd = models.IntegerField()
+    agno = models.IntegerField()
+    grado = models.IntegerField()
+    ind = models.CharField()
+    dim = models.CharField()
+    prom = models.IntegerField(null=True)
+    nom_rbd = models.CharField()
+    cod_reg_rbd = models.IntegerField()
+    nom_reg_rbd = models.CharField()
+    cod_pro_rbd = models.IntegerField()
+    nom_pro_rbd = models.CharField()
+    cod_com_rbd = models.IntegerField()
+    nom_com_rbd = models.CharField()
+    nom_deprov_rbd = models.CharField()
+    cod_depe2 = models.IntegerField()
+    cod_grupo = models.IntegerField(null=True)
+    cod_rural_rbd = models.IntegerField()

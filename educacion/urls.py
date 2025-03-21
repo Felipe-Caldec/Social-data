@@ -6,7 +6,9 @@ from .views import grafico_matricula_parvulo_2023, grafico_matricula_parvulo_202
 from .views import grafico_matricula_parvulo_2020, grafico_matricula_por_ano, grafico_matricula_basica_2023
 from .views import grafico_matricula_basica_2022, grafico_matricula_media_2023, grafico_matricula_media_2022
 from .views import grafico_matricula_basica_2021, grafico_matricula_media_2021
-from .views import grafico_matricula_basica_2020, grafico_matricula_media_2020
+from .views import grafico_matricula_basica_2020, grafico_matricula_media_2020, lista_view
+from .views import lista_simce_view, grafico_resultados_simce_4, grafico_resultados_simce_2
+from .views import grafico_resultados_idps22_4
 
 urlpatterns = [
         path('niveles/', niveles_view, name='niveles'),
@@ -26,4 +28,9 @@ urlpatterns = [
         path('niveles/graficos_bas_2021/', grafico_matricula_basica_2021, name='graficos-bas-2021'),
         path('niveles/graficos_med_2020/', grafico_matricula_media_2020, name='graficos-med-2020'),
         path('niveles/graficos_bas_2020/', grafico_matricula_basica_2020, name='graficos-bas-2020'),
+        path('niveles/lista_matriculas/', lista_view, name='lista-matriculas-view'),
+        path('niveles/lista_simce/', lista_simce_view, name='lista-simce-view'),
+        path('niveles/graficos_sim_4/', grafico_resultados_simce_4, name='graficos-sim-4'),
+        path('niveles/graficos_sim_2/', grafico_resultados_simce_2, name='graficos-sim-2'),
+        path('niveles/graficos_idps22_4/', grafico_resultados_idps22_4, name='graficos-idps22-4'),
 ]
