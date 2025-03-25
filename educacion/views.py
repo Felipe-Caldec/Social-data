@@ -8,6 +8,7 @@ from django.db.models import Q
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from scipy.stats import chi2_contingency
 
 
 def niveles_view (request):
@@ -97,8 +98,17 @@ def grafico_matricula_parvulo_2021 (request):
         4: "Ed. Espacial"
     }
 
+    categorias_nivel = {
+        1:"Sala cuna menor",
+        2:"Sala cuna mayor",
+        3:"Medio menor", 
+        4:"Medio mayor",
+        5:"Transición menor",
+        6:"Transición mayor"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_a_estab', None)
+    region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2021, gen_alu__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -106,14 +116,15 @@ def grafico_matricula_parvulo_2021 (request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
 
-    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m')
+    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m', 'nivel1')
     df = pd.DataFrame(datos)
 
-    # Reemplazar los números con los nombres de género
+    # Renombrar catagorias 
     df['gen_alu'] = df['gen_alu'].map(categorias_genero)
     df['rural_estab'] = df['rural_estab'].map(categorias_rural)
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
+    df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
 
      # Contar cuántos hay de cada género
@@ -198,7 +209,7 @@ def grafico_matricula_parvulo_2021 (request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -226,16 +237,65 @@ def grafico_matricula_parvulo_2021 (request):
         autosize= True,
     )
 
+### **Gráfico 4: Distribución género segun nivel
 
+    conteo_nivel = df.groupby(['rural_estab','nivel1']).size().reset_index(name='Cantidad')
+    conteo_nivel.columns = ['Zona','Nivel', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_nivel = conteo_nivel.groupby('Zona')['Cantidad'].transform('sum')
+    conteo_nivel['Porcentaje'] = (conteo_nivel['Cantidad'] / totales_por_nivel) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_nivel = conteo_nivel.sort_values(by='Nivel', key=lambda x: x.map({v: k for k, v in categorias_nivel.items()}))
+
+    fig4 = go.Figure()
+
+
+    for nivel in conteo_nivel['Nivel'].unique():
+        df_filtrado = conteo_nivel[conteo_nivel['Nivel'] == nivel]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Zona'],
+            y = df_filtrado['Porcentaje'],
+            name= nivel, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según nivel",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_nivel_html = fig4.to_html()
+
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['gen_alu'], df['cod_ense2_m'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
+
+    # Prueba de chi-cuadrado para nivel educativo (Sala cuna menor, mayor, etc.)
+    tabla_nivel = pd.crosstab(df['rural_estab'], df['nivel1'])
+    chi2_nivel, p_nivel, _, _ = chi2_contingency(tabla_nivel)
 
     return render(request, 'educacion/graficos_parvulo_2021.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                    'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                    'grafico_tipo_html': grafico_genero_tipo_html,
+                                                    'grafico_nivel_html':grafico_genero_nivel_html,
+                                                    'chi2_tipo': round(chi2_tipo, 2),
+                                                    'p_tipo': round(p_tipo, 4),
+                                                    'chi2_nivel': round(chi2_nivel, 2),
+                                                    'p_nivel': round(p_nivel, 4),
+                                                    'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2022(request):
 
@@ -263,8 +323,17 @@ def grafico_matricula_parvulo_2022(request):
         4: "Ed. Espacial"
     }
 
+    categorias_nivel = {
+        1:"Sala cuna menor",
+        2:"Sala cuna mayor",
+        3:"Medio menor", 
+        4:"Medio mayor",
+        5:"Transición menor",
+        6:"Transición mayor"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_a_estab', None)
+    region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2022, gen_alu__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -272,7 +341,7 @@ def grafico_matricula_parvulo_2022(request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
 
-    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m')
+    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -280,6 +349,7 @@ def grafico_matricula_parvulo_2022(request):
     df['rural_estab'] = df['rural_estab'].map(categorias_rural)
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
+    df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
 
      # Contar cuántos hay de cada género
@@ -364,7 +434,7 @@ def grafico_matricula_parvulo_2022(request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -392,16 +462,64 @@ def grafico_matricula_parvulo_2022(request):
         autosize= True,
     )
 
+### **Gráfico 4: Distribución género segun nivel
 
+    conteo_nivel = df.groupby(['rural_estab','nivel1']).size().reset_index(name='Cantidad')
+    conteo_nivel.columns = ['Zona','Nivel', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_nivel = conteo_nivel.groupby('Zona')['Cantidad'].transform('sum')
+    conteo_nivel['Porcentaje'] = (conteo_nivel['Cantidad'] / totales_por_nivel) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_nivel = conteo_nivel.sort_values(by='Nivel', key=lambda x: x.map({v: k for k, v in categorias_nivel.items()}))
+
+    fig4 = go.Figure()
+
+
+    for nivel in conteo_nivel['Nivel'].unique():
+        df_filtrado = conteo_nivel[conteo_nivel['Nivel'] == nivel]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Zona'],
+            y = df_filtrado['Porcentaje'],
+            name= nivel, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según nivel",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_nivel_html = fig4.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['gen_alu'], df['cod_ense2_m'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
+
+    # Prueba de chi-cuadrado para nivel educativo (Sala cuna menor, mayor, etc.)
+    tabla_nivel = pd.crosstab(df['rural_estab'], df['nivel1'])
+    chi2_nivel, p_nivel, _, _ = chi2_contingency(tabla_nivel)
 
     return render(request, 'educacion/graficos_parvulo_2022.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                    'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                    'grafico_tipo_html': grafico_genero_tipo_html,
+                                                    'grafico_nivel_html':grafico_genero_nivel_html,
+                                                    'chi2_tipo': round(chi2_tipo, 2),
+                                                    'p_tipo': round(p_tipo, 4),
+                                                    'chi2_nivel': round(chi2_nivel, 2),
+                                                    'p_nivel': round(p_nivel, 4),
+                                                    'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2023(request):
 
@@ -429,8 +547,17 @@ def grafico_matricula_parvulo_2023(request):
         4: "Ed. Espacial"
     }
 
+    categorias_nivel = {
+        1:"Sala cuna menor",
+        2:"Sala cuna mayor",
+        3:"Medio menor", 
+        4:"Medio mayor",
+        5:"Transición menor",
+        6:"Transición mayor"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_a_estab', None)
+    region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2023, gen_alu__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -438,7 +565,7 @@ def grafico_matricula_parvulo_2023(request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
 
-    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m')
+    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -446,6 +573,7 @@ def grafico_matricula_parvulo_2023(request):
     df['rural_estab'] = df['rural_estab'].map(categorias_rural)
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
+    df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
 
      # Contar cuántos hay de cada género
@@ -530,7 +658,7 @@ def grafico_matricula_parvulo_2023(request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -558,16 +686,64 @@ def grafico_matricula_parvulo_2023(request):
         autosize= True,
     )
 
+    ### **Gráfico 4: Distribución género segun nivel
 
+    conteo_nivel = df.groupby(['rural_estab','nivel1']).size().reset_index(name='Cantidad')
+    conteo_nivel.columns = ['Zona','Nivel', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_nivel = conteo_nivel.groupby('Zona')['Cantidad'].transform('sum')
+    conteo_nivel['Porcentaje'] = (conteo_nivel['Cantidad'] / totales_por_nivel) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_nivel = conteo_nivel.sort_values(by='Nivel', key=lambda x: x.map({v: k for k, v in categorias_nivel.items()}))
+
+    fig4 = go.Figure()
+
+
+    for nivel in conteo_nivel['Nivel'].unique():
+        df_filtrado = conteo_nivel[conteo_nivel['Nivel'] == nivel]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Zona'],
+            y = df_filtrado['Porcentaje'],
+            name= nivel, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según nivel",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_nivel_html = fig4.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['gen_alu'], df['cod_ense2_m'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
+
+    # Prueba de chi-cuadrado para nivel educativo (Sala cuna menor, mayor, etc.)
+    tabla_nivel = pd.crosstab(df['rural_estab'], df['nivel1'])
+    chi2_nivel, p_nivel, _, _ = chi2_contingency(tabla_nivel)
 
     return render(request, 'educacion/graficos_parvulo_2023.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                    'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                    'grafico_tipo_html': grafico_genero_tipo_html,
+                                                    'grafico_nivel_html':grafico_genero_nivel_html,
+                                                    'chi2_tipo': round(chi2_tipo, 2),
+                                                    'p_tipo': round(p_tipo, 4),
+                                                    'chi2_nivel': round(chi2_nivel, 2),
+                                                    'p_nivel': round(p_nivel, 4),
+                                                    'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2024(request):
 
@@ -595,8 +771,16 @@ def grafico_matricula_parvulo_2024(request):
         4: "Ed. Espacial"
     }
 
+    categorias_nivel = {
+        1:"Sala cuna menor",
+        2:"Sala cuna mayor",
+        3:"Medio menor", 
+        4:"Medio mayor",
+        5:"Transición menor",
+        6:"Transición mayor"
+    }
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_a_estab', None)
+    region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2024, gen_alu__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -604,7 +788,7 @@ def grafico_matricula_parvulo_2024(request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
 
-    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m')
+    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -612,6 +796,7 @@ def grafico_matricula_parvulo_2024(request):
     df['rural_estab'] = df['rural_estab'].map(categorias_rural)
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
+    df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
 
      # Contar cuántos hay de cada género
@@ -696,7 +881,7 @@ def grafico_matricula_parvulo_2024(request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -724,16 +909,64 @@ def grafico_matricula_parvulo_2024(request):
         autosize= True,
     )
 
+    ### **Gráfico 4: Distribución género segun nivel
 
+    conteo_nivel = df.groupby(['rural_estab','nivel1']).size().reset_index(name='Cantidad')
+    conteo_nivel.columns = ['Zona','Nivel', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_nivel = conteo_nivel.groupby('Zona')['Cantidad'].transform('sum')
+    conteo_nivel['Porcentaje'] = (conteo_nivel['Cantidad'] / totales_por_nivel) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_nivel = conteo_nivel.sort_values(by='Nivel', key=lambda x: x.map({v: k for k, v in categorias_nivel.items()}))
+
+    fig4 = go.Figure()
+
+
+    for nivel in conteo_nivel['Nivel'].unique():
+        df_filtrado = conteo_nivel[conteo_nivel['Nivel'] == nivel]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Zona'],
+            y = df_filtrado['Porcentaje'],
+            name= nivel, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según nivel",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_nivel_html = fig4.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['gen_alu'], df['cod_ense2_m'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
+
+    # Prueba de chi-cuadrado para nivel educativo (Sala cuna menor, mayor, etc.)
+    tabla_nivel = pd.crosstab(df['rural_estab'], df['nivel1'])
+    chi2_nivel, p_nivel, _, _ = chi2_contingency(tabla_nivel)
 
     return render(request, 'educacion/graficos_parvulo_2024.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_nivel_html':grafico_genero_nivel_html,
+                                                        'chi2_tipo': round(chi2_tipo, 2),
+                                                        'p_tipo': round(p_tipo, 4),
+                                                        'chi2_nivel': round(chi2_nivel, 2),
+                                                        'p_nivel': round(p_nivel, 4),
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2020(request):
 
@@ -761,8 +994,17 @@ def grafico_matricula_parvulo_2020(request):
         4: "Ed. Espacial"
     }
 
+    categorias_nivel = {
+        1:"Sala cuna menor",
+        2:"Sala cuna mayor",
+        3:"Medio menor", 
+        4:"Medio mayor",
+        5:"Transición menor",
+        6:"Transición mayor"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_a_estab', None)
+    region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2020, gen_alu__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -770,7 +1012,7 @@ def grafico_matricula_parvulo_2020(request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
 
-    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m')
+    datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -778,6 +1020,7 @@ def grafico_matricula_parvulo_2020(request):
     df['rural_estab'] = df['rural_estab'].map(categorias_rural)
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
+    df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
 
      # Contar cuántos hay de cada género
@@ -862,7 +1105,7 @@ def grafico_matricula_parvulo_2020(request):
     conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_dependencia.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
     fig3 = go.Figure()
@@ -890,16 +1133,64 @@ def grafico_matricula_parvulo_2020(request):
         autosize= True,
     )
 
+    ### **Gráfico 4: Distribución género segun nivel
 
+    conteo_nivel = df.groupby(['rural_estab','nivel1']).size().reset_index(name='Cantidad')
+    conteo_nivel.columns = ['Zona','Nivel', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_nivel = conteo_nivel.groupby('Zona')['Cantidad'].transform('sum')
+    conteo_nivel['Porcentaje'] = (conteo_nivel['Cantidad'] / totales_por_nivel) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_nivel = conteo_nivel.sort_values(by='Nivel', key=lambda x: x.map({v: k for k, v in categorias_nivel.items()}))
+
+    fig4 = go.Figure()
+
+
+    for nivel in conteo_nivel['Nivel'].unique():
+        df_filtrado = conteo_nivel[conteo_nivel['Nivel'] == nivel]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Zona'],
+            y = df_filtrado['Porcentaje'],
+            name= nivel, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según nivel",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_nivel_html = fig4.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['gen_alu'], df['cod_ense2_m'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
+
+    # Prueba de chi-cuadrado para nivel educativo (Sala cuna menor, mayor, etc.)
+    tabla_nivel = pd.crosstab(df['rural_estab'], df['nivel1'])
+    chi2_nivel, p_nivel, _, _ = chi2_contingency(tabla_nivel)
 
     return render(request, 'educacion/graficos_parvulo_2020.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_nivel_html':grafico_genero_nivel_html,
+                                                        'chi2_tipo': round(chi2_tipo, 2),
+                                                        'p_tipo': round(p_tipo, 4),
+                                                        'chi2_nivel': round(chi2_nivel, 2),
+                                                        'p_nivel': round(p_nivel, 4),
+                                                        'region': region_seleccionada})
 
 
 ######################### GRAFICOS MATRICULA SEGUN AÑO #################################
@@ -1057,8 +1348,14 @@ def grafico_matricula_basica_2023 (request):
         3: "Adultas/os"
     }
 
+    tipo2_enseñanza = {
+        3: "Enseñanza Básica Regular",
+        4: "Enseñanza Básica Especial",
+        9: "Educación Básica Adultos"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1066,7 +1363,7 @@ def grafico_matricula_basica_2023 (request):
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
 
-    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -1074,6 +1371,7 @@ def grafico_matricula_basica_2023 (request):
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+    df['ENS'] = df['ENS'].map(tipo2_enseñanza)
 
 
      # Contar cuántos hay de cada género
@@ -1186,14 +1484,52 @@ def grafico_matricula_basica_2023 (request):
     )
 
 
+### **Gráfico 4: Distribución género segun tipo2
+
+    conteo_ens = df.groupby(['RURAL_RBD','ENS']).size().reset_index(name='Cantidad')
+    conteo_ens.columns = ['Género','Enseñanza', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_ens = conteo_ens.groupby('Género')['Cantidad'].transform('sum')
+    conteo_ens['Porcentaje'] = (conteo_ens['Cantidad'] / totales_por_ens) * 100
+
+    fig4 = go.Figure()
+
+
+    for ens in conteo_ens['Enseñanza'].unique():
+        df_filtrado = conteo_ens[conteo_ens['Enseñanza'] == ens]
+        fig4.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= ens, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig4.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+
 
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
     grafico_genero_tipo_html = fig3.to_html()
+    grafico_genero_ens_html = fig4.to_html()
+
 
     return render(request, 'educacion/graficos_basica_2023.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
                                                       'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_enseñanza_html': grafico_genero_ens_html,
                                                       'region': region_seleccionada})
 
 def grafico_matricula_basica_2022 (request):
@@ -1221,8 +1557,14 @@ def grafico_matricula_basica_2022 (request):
         3: "Adultas/os"
     }
 
+    tipo2_enseñanza = {
+        3: "Enseñanza Básica Regular",
+        4: "Enseñanza Básica Especial",
+        9: "Educación Básica Adultos"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1230,7 +1572,7 @@ def grafico_matricula_basica_2022 (request):
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
 
-    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -1238,6 +1580,7 @@ def grafico_matricula_basica_2022 (request):
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+    df['ENS'] = df['ENS'].map(tipo2_enseñanza)
 
 
      # Contar cuántos hay de cada género
@@ -1385,8 +1728,14 @@ def grafico_matricula_basica_2021 (request):
         3: "Adultas/os"
     }
 
+    tipo2_enseñanza = {
+        3: "Enseñanza Básica Regular",
+        4: "Enseñanza Básica Especial",
+        9: "Educación Básica Adultos"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1394,7 +1743,7 @@ def grafico_matricula_basica_2021 (request):
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
 
-    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -1402,6 +1751,7 @@ def grafico_matricula_basica_2021 (request):
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
+    df['ENS'] = df['ENS'].map(tipo2_enseñanza)
 
 
      # Contar cuántos hay de cada género
@@ -1549,8 +1899,14 @@ def grafico_matricula_basica_2020 (request):
         3: "Adultas/os"
     }
 
+    tipo2_enseñanza = {
+        3: "Enseñanza Básica Regular",
+        4: "Enseñanza Básica Especial",
+        9: "Educación Básica Adultos"
+    }
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1558,7 +1914,7 @@ def grafico_matricula_basica_2020 (request):
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
 
-    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
+    datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
 
     # Reemplazar los números con los nombres de género
@@ -1566,7 +1922,7 @@ def grafico_matricula_basica_2020 (request):
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
-
+    df['ENS'] = df['ENS'].map(tipo2_enseñanza)
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -1593,7 +1949,7 @@ def grafico_matricula_basica_2020 (request):
             y=df_filtrado['Porcentaje'],
             name=zona,  # Esto agrupará las barras por zona
             text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
-            textposition='auto'
+            textposition='auto',
         ))
 
     # Configurar el diseño del gráfico
@@ -1712,7 +2068,7 @@ def grafico_matricula_media_2023 (request):
         5:"Servicio Local de Educación",
     }
 
-    tipo_ensenanza = {
+    tipo_enseñanza = {
         5: "Jóvenes Científico-Humanísta",
         6: "Adultos Científico-Humanísta",
         7: "Jóvenes Técnico-Profesional",
@@ -1720,7 +2076,7 @@ def grafico_matricula_media_2023 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1735,7 +2091,7 @@ def grafico_matricula_media_2023 (request):
     df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_rural)
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
-    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_ensenanza)
+    df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
 
 
      # Contar cuántos hay de cada género
@@ -1779,7 +2135,7 @@ def grafico_matricula_media_2023 (request):
         autosize= True
     )
 
-### **Gráfico 2: Distribución género segun dependencia**
+### Gráfico 2: Distribución género segun dependencia
 
     conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
     conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
@@ -1813,14 +2169,18 @@ def grafico_matricula_media_2023 (request):
         autosize= True,
     )
 
-### **Gráfico 3: Distribución género segun tipo**
+### Gráfico 3: Distribución género segun tipo de enseñanza
 
-    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
-    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+    conteo_tipo = df.groupby(['RURAL_RBD','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Zona','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Zona')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+# Ordenar según valor ortiginal de la categoría
+    conteo_tipo = conteo_tipo.sort_values(by='Tipo', key=lambda x: x.map({v: k for k, v in tipo_enseñanza.items()}))
+
 
     fig3 = go.Figure()
 
@@ -1828,7 +2188,7 @@ def grafico_matricula_media_2023 (request):
     for tipo in conteo_tipo['Tipo'].unique():
         df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
         fig3.add_trace(go.Bar(
-            x =df_filtrado['Género'],
+            x =df_filtrado['Zona'],
             y = df_filtrado['Porcentaje'],
             name= tipo, 
             text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
@@ -1841,21 +2201,25 @@ def grafico_matricula_media_2023 (request):
         title_font= dict(weight="bold"),
         title_x=0.5,
         yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
-        xaxis_title="Género",
+        xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
         autosize= True,
     )
 
-
-
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
-    grafico_genero_tipo_html = fig3.to_html()
+    grafico_zona_tipo_html = fig3.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['RURAL_RBD'], df['COD_ENSE2'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2023.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_tipo_html': grafico_zona_tipo_html,
+                                                      'chi2_tipo':round(chi2_tipo,2),
+                                                      'p_tipo': round(p_tipo,4),
                                                       'region': region_seleccionada})
 
 def grafico_matricula_media_2022 (request):
@@ -1886,7 +2250,7 @@ def grafico_matricula_media_2022 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -1945,7 +2309,7 @@ def grafico_matricula_media_2022 (request):
         autosize= True
     )
 
-### **Gráfico 2: Distribución género segun dependencia**
+### Gráfico 2: Distribución género segun dependencia
 
     conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
     conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
@@ -1979,14 +2343,16 @@ def grafico_matricula_media_2022 (request):
         autosize= True,
     )
 
-### **Gráfico 3: Distribución género segun tipo**
+### Gráfico 3: Distribución género segun tipo de enseñanza
 
-    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
-    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+    conteo_tipo = df.groupby(['RURAL_RBD','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Zona','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Zona')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_tipo = conteo_tipo.sort_values(by='Tipo', key=lambda x: x.map({v: k for k, v in tipo_enseñanza.items()}))
 
     fig3 = go.Figure()
 
@@ -1994,7 +2360,7 @@ def grafico_matricula_media_2022 (request):
     for tipo in conteo_tipo['Tipo'].unique():
         df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
         fig3.add_trace(go.Bar(
-            x =df_filtrado['Género'],
+            x =df_filtrado['Zona'],
             y = df_filtrado['Porcentaje'],
             name= tipo, 
             text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
@@ -2007,21 +2373,25 @@ def grafico_matricula_media_2022 (request):
         title_font= dict(weight="bold"),
         title_x=0.5,
         yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
-        xaxis_title="Género",
+        xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
         autosize= True,
     )
 
-
-
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
-    grafico_genero_tipo_html = fig3.to_html()
+    grafico_zona_tipo_html = fig3.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['RURAL_RBD'], df['COD_ENSE2'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2022.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_tipo_html': grafico_zona_tipo_html,
+                                                      'chi2_tipo':round(chi2_tipo,4),
+                                                      'p_tipo': round(p_tipo,4),
                                                       'region': region_seleccionada})
 
 def grafico_matricula_media_2021 (request):
@@ -2052,7 +2422,7 @@ def grafico_matricula_media_2021 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -2111,7 +2481,7 @@ def grafico_matricula_media_2021 (request):
         autosize= True
     )
 
-### **Gráfico 2: Distribución género segun dependencia**
+### **Gráfico 2: Distribución género segun dependencia
 
     conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
     conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
@@ -2145,14 +2515,16 @@ def grafico_matricula_media_2021 (request):
         autosize= True,
     )
 
-### **Gráfico 3: Distribución género segun tipo**
+### **Gráfico 3: Distribución género segun tipo de enseñanza
 
-    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
-    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+    conteo_tipo = df.groupby(['RURAL_RBD','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Zona','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Zona')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_tipo = conteo_tipo.sort_values(by='Tipo', key=lambda x: x.map({v: k for k, v in tipo_enseñanza.items()}))
 
     fig3 = go.Figure()
 
@@ -2160,7 +2532,7 @@ def grafico_matricula_media_2021 (request):
     for tipo in conteo_tipo['Tipo'].unique():
         df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
         fig3.add_trace(go.Bar(
-            x =df_filtrado['Género'],
+            x =df_filtrado['Zona'],
             y = df_filtrado['Porcentaje'],
             name= tipo, 
             text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
@@ -2169,25 +2541,29 @@ def grafico_matricula_media_2021 (request):
 
     fig3.update_layout(
         barmode='group',
-        title="Gráfico género según tipo",
+        title="Gráfico zona según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
         yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
-        xaxis_title="Género",
+        xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
         autosize= True,
     )
 
-
-
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
-    grafico_genero_tipo_html = fig3.to_html()
+    grafico_zona_tipo_html = fig3.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['RURAL_RBD'], df['COD_ENSE2'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2021.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_tipo_html': grafico_zona_tipo_html,
+                                                      'chi2_tipo':round(chi2_tipo,2),
+                                                      'p_tipo':round(p_tipo,4),
                                                       'region': region_seleccionada})
 
 def grafico_matricula_media_2020 (request):
@@ -2219,7 +2595,7 @@ def grafico_matricula_media_2020 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('NOM_REG_RBD_A', None)
+    region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -2278,7 +2654,7 @@ def grafico_matricula_media_2020 (request):
         autosize= True
     )
 
-### **Gráfico 2: Distribución género segun dependencia**
+### **Gráfico 2: Distribución género segun dependencia
 
     conteo_dependencia = df.groupby(['GEN_ALU','COD_DEPE2']).size().reset_index(name='Cantidad')
     conteo_dependencia.columns = ['Género','Dependencia', 'Cantidad']
@@ -2312,14 +2688,16 @@ def grafico_matricula_media_2020 (request):
         autosize= True,
     )
 
-### **Gráfico 3: Distribución género segun tipo**
+### **Gráfico 3: Distribución zona segun tipo de enseñanza
 
-    conteo_tipo = df.groupby(['GEN_ALU','COD_ENSE2']).size().reset_index(name='Cantidad')
-    conteo_tipo.columns = ['Género','Tipo', 'Cantidad']
+    conteo_tipo = df.groupby(['RURAL_RBD','COD_ENSE2']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Zona','Tipo', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    totales_por_tipo = conteo_tipo.groupby('Zona')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+# Ordenar según valor ortiginal de la categoría
+    conteo_tipo = conteo_tipo.sort_values(by='Tipo', key=lambda x: x.map({v: k for k, v in tipo_enseñanza.items()}))
 
     fig3 = go.Figure()
 
@@ -2327,7 +2705,7 @@ def grafico_matricula_media_2020 (request):
     for tipo in conteo_tipo['Tipo'].unique():
         df_filtrado = conteo_tipo[conteo_tipo['Tipo'] == tipo]
         fig3.add_trace(go.Bar(
-            x =df_filtrado['Género'],
+            x =df_filtrado['Zona'],
             y = df_filtrado['Porcentaje'],
             name= tipo, 
             text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
@@ -2340,21 +2718,25 @@ def grafico_matricula_media_2020 (request):
         title_font= dict(weight="bold"),
         title_x=0.5,
         yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
-        xaxis_title="Género",
+        xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
         autosize= True,
     )
 
-
-
     grafico_genero_zona_html = fig.to_html()
     grafico_genero_dependencia_html = fig2.to_html()
-    grafico_genero_tipo_html = fig3.to_html()
+    grafico_zona_tipo_html = fig3.to_html()
+
+    # Prueba de chi-cuadrado para tipo de enseñanza (Ed. Parvularia vs. Ed. Especial)
+    tabla_tipo = pd.crosstab(df['RURAL_RBD'], df['COD_ENSE2'])
+    chi2_tipo, p_tipo, _, _ = chi2_contingency(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2020.html', {'grafico_html': grafico_genero_zona_html,
                                                       'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_tipo_html': grafico_zona_tipo_html,
+                                                      'chi2_tipo': round(chi2_tipo,2),
+                                                      'p_tipo': round(p_tipo,4),
                                                       'region': region_seleccionada})
 
 
@@ -2377,7 +2759,7 @@ def grafico_resultados_simce_4 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg', None)
+    region_seleccionada = request.GET.get('nom_reg', "Región metropolitana de santiago")
 
     datos = resultados_simce.objects.filter(grado='4b')
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -2451,7 +2833,7 @@ def grafico_resultados_simce_2 (request):
     }
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg', None)
+    region_seleccionada = request.GET.get('nom_reg', "Región metropolitana de santiago")
 
     datos = resultados_simce.objects.filter(grado='2m')
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -2543,14 +2925,36 @@ def grafico_resultados_idps22_4 (request):
         "DE ÑUBLE": "Región de Ñuble"
     }
 
+    dependencia_cat = {
+        1:"Municipal",
+        2:"Particular subvencionado",
+        3:"Particular pagado",
+        4:"SLEP"
+    }
+
     zona ={
         1: "Urbano",
         2: "Rural"
     }
+
+    ind_cat = {
+        "AM":"Autoestima Académica y Motivación Escolar",
+        "CC":"Clima de Convivencia Escolar",
+        "HV":"Hábitos de Vida Saludable",
+        "PF":"Participación y Formación Ciudadana"
+    }
+
+
+    colores_indicadores = {
+    "AM": "#EF553B",  # Rojo
+    "CC": "#636EFA",  # Azul
+    "HV": "#D4A017",  # Dorado
+    "PF": "#228B22"   # Verde
+}
     
 
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_rbd', None)
+    region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
 
     datos = resultados_simce_idps.objects.filter(grado='4', agno=2022)
     # Obtener datos del modelo, filtrando por región si se especifica
@@ -2558,10 +2962,12 @@ def grafico_resultados_idps22_4 (request):
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
 
-    datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom')
+    datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom',
+                        'nom_pro_rbd')
     df = pd.DataFrame(datos)
 
     df['nom_reg_rbd']=df['nom_reg_rbd'].map(regiones)
+    df['ind'] = df['ind'].map(ind_cat)
 
     # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
     df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
@@ -2577,7 +2983,7 @@ def grafico_resultados_idps22_4 (request):
             y=df_filtrado['prom'],
             name=indicador,
             text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),  # Formato con 2 decimales
-            textposition='inside' 
+            textposition='inside'
         ))
 
     # Configurar el diseño del gráfico
@@ -2596,35 +3002,112 @@ def grafico_resultados_idps22_4 (request):
     # Crear la figura con Plotly
     fig2 = go.Figure()
 
-    # Agregar barras para cada combinación de indicador y ruralidad
-    for indicador in df_zona['ind'].unique():
-        for ruralidad in df_zona['cod_rural_rbd'].unique():
-            df_filtrado = df_zona[(df_zona['ind'] == indicador) & (df_zona['cod_rural_rbd'] == ruralidad)]
-            fig2.add_trace(go.Bar(
-                x=df_filtrado['cod_rural_rbd'].map(zona),
-                y=df_filtrado['prom'],
-                name=indicador,
-                text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
-                textposition='inside'
-            ))
+    # Iterar por cada zona (Rural y Urbano) primero
+    for ruralidad in df_zona['cod_rural_rbd'].unique():
+        df_filtrado = df_zona[df_zona['cod_rural_rbd'] == ruralidad]
+
+        fig2.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=zona[ruralidad],  # La etiqueta solo será "Rural" o "Urbano"
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
+        ))
 
     # Configurar el diseño del gráfico
-    fig2.update_layout(
-        title="Comparación de Indicadores por Región y Zona",
-        xaxis_title="Región",
+        fig2.update_layout(
+        title="Comparación de Indicadores por Zona",
+        xaxis_title="Indicador",
         yaxis_title="Promedio",
-        barmode='group',
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+     # Gráfico 3 comparando resultados según dependencia
+    df_depe = df.groupby(['nom_reg_rbd', 'ind', 'cod_depe2'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por zona
+    fig3= go.Figure()
+
+    # Iterar por cada dependencia
+    for dependencia in df_depe['cod_depe2'].unique():
+        df_filtrado = df_depe[df_depe['cod_depe2'] == dependencia]
+
+        fig3.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=dependencia_cat[dependencia],  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig3.update_layout(
+        title="Comparación de Indicadores por Dependencia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+    
+        # Gráfico 4 comparando resultados según provincia 
+    df_pro = df.groupby(['nom_reg_rbd', 'ind', 'nom_pro_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por provincia
+    fig4= go.Figure()
+
+    # Iterar por cada provincia
+    for provincia in df_pro['nom_pro_rbd'].unique():
+        df_filtrado = df_pro[df_pro['nom_pro_rbd'] == provincia]
+
+        fig4.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=provincia,  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig4.update_layout(
+        title="Comparación de Indicadores por Provincia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
         template="plotly_white"
     )
 
     grafico_html =fig.to_html()
     grafico_zona =fig2.to_html()
+    grafico_dependencia =fig3.to_html()
+    grafico_provincia =fig4.to_html()
+
+    # Prueba de chi-cuadrado para zona (Rural/Urbano)
+    tabla_zona = df.pivot_table(index='ind', columns='cod_rural_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_zona, p_zona, _, _ = chi2_contingency(tabla_zona)
+
+    # Prueba de chi-cuadrado para dependencia
+    tabla_depe = df.pivot_table(index='ind', columns='cod_depe2', values='prom', aggfunc='mean').fillna(0)
+    chi2_depe, p_depe, _, _ = chi2_contingency(tabla_depe)
+
+    # Prueba de chi-cuadrado para provincia
+    tabla_pro = df.pivot_table(index='ind', columns='nom_pro_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_pro, p_pro, _, _ = chi2_contingency(tabla_pro)
 
     return render(request, 'educacion/graficos_idps22_4.html', {'grafico_html': grafico_html,
                                                                 'grafico_zona': grafico_zona,
-                                                      'nom_reg_rbd': region_seleccionada,})
-    
-def grafico_resultados_idps22_4(request):
+                                                                'grafico_dependencia':grafico_dependencia,
+                                                                'grafico_provincia':grafico_provincia,
+                                                                'nom_reg_rbd': region_seleccionada,
+                                                                'chi2_zona': round(chi2_zona,2),
+                                                                'chi2_depe':round(chi2_depe,2),
+                                                                'chi2_pro':round(chi2_pro,2),
+                                                                'p_zona':round(p_zona,4),
+                                                                'p_depe':round(p_depe,4),
+                                                                'p_pro':round(p_pro,4)})
+                
+def grafico_resultados_idps22_2(request):
 
     regiones = {
         "METROPOLITANA DE SANTIAGO": "Región Metropolitana",
@@ -2650,32 +3133,53 @@ def grafico_resultados_idps22_4(request):
         2: "Rural"
     }
 
-    colores_indicadores = {
-        "AM": "blue",
-        "CC": "green",
-        "HV": "orange",
-        "PF": "red"
+    dependencia_cat = {
+        1:"Municipal",
+        2:"Particular subvencionado",
+        3:"Particular pagado",
+        4:"SLEP"
     }
 
+    ind_cat = {
+        "AM":"Autoestima Académica y Motivación Escolar",
+        "CC":"Clima de Convivencia Escolar",
+        "HV":"Hábitos de Vida Saludable",
+        "PF":"Participación y Formación Ciudadana"
+    }
+
+    colores_indicadores = {
+    "AM": "#EF553B",  # Rojo
+    "CC": "#636EFA",  # Azul
+    "HV": "#D4A017",  # Dorado
+    "PF": "#228B22"   # Verde
+}
+
     # Obtener la región seleccionada desde la URL (por defecto muestra todos)
-    region_seleccionada = request.GET.get('nom_reg_rbd', None)
+    region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
 
     # Filtrar los datos por grado y año
-    datos = resultados_simce_idps.objects.filter(grado='4', agno=2022)
+    datos = resultados_simce_idps.objects.filter(grado='2', agno=2022)
     
     # Filtrar por región si es necesario
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
 
     # Convertir los datos a DataFrame
-    datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom')
+    datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom',
+                         'nom_pro_rbd')
     df = pd.DataFrame(datos)
 
     # Mapear las regiones
     df['nom_reg_rbd'] = df['nom_reg_rbd'].map(regiones)
+    df['ind'] = df['ind'].map(ind_cat)
 
     # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
     df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
+
+    # Cambiar colores de las barras
+    #colores = px.colors.sequential.Plasma
+    #colores_indicadores = {ind: colores[i % len(colores)] for i, ind in enumerate(df_promedios['ind'].unique())}
+
 
     # Crear la figura para el gráfico de comparación por región
     fig = go.Figure()
@@ -2689,7 +3193,7 @@ def grafico_resultados_idps22_4(request):
             name=indicador,
             text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
             textposition='inside',
-            marker_color=colores_indicadores.get(indicador, 'grey')
+            #marker_color= colores_indicadores[indicador] #colores_indicadores.get(indicador, 'grey')
         ))
 
     # Configurar el diseño del gráfico por región
@@ -2701,50 +3205,525 @@ def grafico_resultados_idps22_4(request):
         template="plotly_white"
     )
 
-    # Gráfico 2 comparando resultados según zona (rural/urbano)
+    # Gráfico 2 comparando resultados según zona 
     df_zona = df.groupby(['nom_reg_rbd', 'ind', 'cod_rural_rbd'])['prom'].mean().reset_index()
 
     # Crear la figura para el gráfico de comparación por zona
     fig2 = go.Figure()
 
-    # Agregar barras para cada combinación de indicador y ruralidad
-    for indicador in df_zona['ind'].unique():
-        df_filtrado = df_zona[df_zona['ind'] == indicador]
+    # Iterar por cada zona (Rural y Urbano) primero
+    for ruralidad in df_zona['cod_rural_rbd'].unique():
+        df_filtrado = df_zona[df_zona['cod_rural_rbd'] == ruralidad]
+
+        fig2.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=zona[ruralidad],  # La etiqueta solo será "Rural" o "Urbano"
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig2.update_layout(
+        title="Comparación de Indicadores por Zona",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
         
-        # Variable para asegurar que solo se agregue un nombre en la leyenda
-        legend_name_added = False
+     # Gráfico 3 comparando resultados según dependencia 
+    df_depe = df.groupby(['nom_reg_rbd', 'ind', 'cod_depe2'])['prom'].mean().reset_index()
 
-        for ruralidad in df_filtrado['cod_rural_rbd'].unique():
-            df_zona_filtrada = df_filtrado[df_filtrado['cod_rural_rbd'] == ruralidad]
+    # Crear la figura para el gráfico de comparación por dependencia
+    fig3= go.Figure()
 
-            # Usar el nombre del indicador solo una vez
-            legend_name = indicador if not legend_name_added else ''
-            legend_name_added = True
+    # Iterar por cada dependencia
+    for dependencia in df_depe['cod_depe2'].unique():
+        df_filtrado = df_depe[df_depe['cod_depe2'] == dependencia]
 
-            fig2.add_trace(go.Bar(
-                x=df_zona_filtrada['nom_reg_rbd'],
-                y=df_zona_filtrada['prom'],
-                name=legend_name,  # Solo agrega el nombre del indicador una vez en la leyenda
-                text=df_zona_filtrada['prom'].apply(lambda x: f"{x:.2f}"),
-                textposition='inside',  # Coloca el texto dentro de la barra
-                marker_color=colores_indicadores.get(indicador, 'grey')
-            ))
+        fig3.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=dependencia_cat[dependencia], 
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
 
-    # Configurar el diseño del gráfico por zona
-    fig2.update_layout(
-        title="Comparación de Indicadores por Región y Zona",
+    # Configurar el diseño del gráfico
+        fig3.update_layout(
+        title="Comparación de Indicadores por Dependencia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+        
+    # Gráfico 4 comparando resultados según provincia 
+    df_pro = df.groupby(['nom_reg_rbd', 'ind', 'nom_pro_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por provincia
+    fig4= go.Figure()
+
+    # Iterar por cada provincia
+    for provincia in df_pro['nom_pro_rbd'].unique():
+        df_filtrado = df_pro[df_pro['nom_pro_rbd'] == provincia]
+
+        fig4.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=provincia,  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig4.update_layout(
+        title="Comparación de Indicadores por Provincia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+
+        
+    # Convertir ambos gráficos a HTML
+    grafico_html = fig.to_html()
+    grafico_zona = fig2.to_html()
+    grafico_dependencia = fig3.to_html()
+    grafico_provincia = fig4.to_html()
+
+    # Prueba de chi-cuadrado para zona (Rural/Urbano)
+    tabla_zona = df.pivot_table(index='ind', columns='cod_rural_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_zona, p_zona, _, _ = chi2_contingency(tabla_zona)
+
+    # Prueba de chi-cuadrado para dependencia
+    tabla_depe = df.pivot_table(index='ind', columns='cod_depe2', values='prom', aggfunc='mean').fillna(0)
+    chi2_depe, p_depe, _, _ = chi2_contingency(tabla_depe)
+
+    return render(request, 'educacion/graficos_idps22_2.html', {
+        'grafico_html': grafico_html,
+        'grafico_zona': grafico_zona,
+        'grafico_dependencia':grafico_dependencia,
+        'grafico_provincia':grafico_provincia,
+        'nom_reg_rbd': region_seleccionada,
+        'chi2_zona': round(chi2_zona, 2),
+        'p_zona': round(p_zona, 4),
+        'chi2_depe': round(chi2_depe, 2),
+        'p_depe': round(p_depe, 4),
+    })
+
+def grafico_resultados_idps23_4 (request):
+
+    regiones = {
+        "METROPOLITANA DE SANTIAGO": "Región Metropolitana",
+        "DE TARAPACÁ": "Región de Tarapacá",
+        "DE ANTOFAGASTA":"Región de Antofagasta",
+        "DE ATACAMA":"Región de Atacama",
+        "DE COQUIMBO":"Región de Coquimbo",
+        "DE VALPARAÍSO":"Región de Valparaíso",
+        "DEL LIBERTADOR BERNARDO O":"Región del Libertador Gral. Bernardo OHiggins",
+        "DEL MAULE": "Región del Maule",
+        "DEL BIOBÍO": "Región del Biobío",
+        "DE LA ARAUCANÍA":"Región de la Araucanía",
+        "DE LOS LAGOS": "Región de Los Lagos",
+        "DE AYSÉN DEL GENERAL CARL": "Región de Aysén del Gral. Carlos Ibáñez del Campo",
+        "DE MAGALLANES Y DE LA ANT":"Región de Magallanes y de la Antártica Chilena",
+        "DE LOS RÍOS": "Región de Los Ríos",
+        "DE ARICA Y PARINACOTA": "Región de Arica y Parinacota",
+        "DE ÑUBLE": "Región de Ñuble"
+    }
+
+    dependencia_cat = {
+        1:"Municipal",
+        2:"Particular subvencionado",
+        3:"Particular pagado",
+        4:"SLEP"
+    }
+
+    zona ={
+        1: "Urbano",
+        2: "Rural"
+    }
+
+    ind_cat = {
+        "AM":"Autoestima Académica y Motivación Escolar",
+        "CC":"Clima de Convivencia Escolar",
+        "HV":"Hábitos de Vida Saludable",
+        "PF":"Participación y Formación Ciudadana"
+    }
+
+
+    colores_indicadores = {
+    "AM": "#EF553B",  # Rojo
+    "CC": "#636EFA",  # Azul
+    "HV": "#D4A017",  # Dorado
+    "PF": "#228B22"   # Verde
+}
+    
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
+
+    datos = resultados_simce_idps.objects.filter(grado='4', agno=2023)
+    # Obtener datos del modelo, filtrando por región si se especifica
+  
+    if region_seleccionada:
+        datos = datos.filter(nom_reg_rbd=region_seleccionada)
+
+    datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom',
+                        'nom_pro_rbd')
+    df = pd.DataFrame(datos)
+
+    df['nom_reg_rbd']=df['nom_reg_rbd'].map(regiones)
+    df['ind'] = df['ind'].map(ind_cat)
+
+    # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
+    df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
+
+
+    fig = go.Figure()
+    
+     # Agregar barras para cada tipo de indicador (AM, CC, HV, PF)
+    for indicador in df_promedios['ind'].unique():
+        df_filtrado = df_promedios[df_promedios['ind'] == indicador]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['nom_reg_rbd'],
+            y=df_filtrado['prom'],
+            name=indicador,
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),  # Formato con 2 decimales
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+    fig.update_layout(
+        title="Promedio por Región según Tipo de Indicador",
         xaxis_title="Región",
         yaxis_title="Promedio",
         barmode='group',
         template="plotly_white"
     )
 
+    # Gráfico 2 comparacion de resultados segun zona 
+
+    df_zona = df.groupby(['nom_reg_rbd', 'ind', 'cod_rural_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura con Plotly
+    fig2 = go.Figure()
+
+    # Iterar por cada zona (Rural y Urbano) primero
+    for ruralidad in df_zona['cod_rural_rbd'].unique():
+        df_filtrado = df_zona[df_zona['cod_rural_rbd'] == ruralidad]
+
+        fig2.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=zona[ruralidad],  # La etiqueta solo será "Rural" o "Urbano"
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig2.update_layout(
+        title="Comparación de Indicadores por Zona",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+     # Gráfico 3 comparando resultados según dependencia
+    df_depe = df.groupby(['nom_reg_rbd', 'ind', 'cod_depe2'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por zona
+    fig3= go.Figure()
+
+    # Iterar por cada dependencia
+    for dependencia in df_depe['cod_depe2'].unique():
+        df_filtrado = df_depe[df_depe['cod_depe2'] == dependencia]
+
+        fig3.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=dependencia_cat[dependencia],  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig3.update_layout(
+        title="Comparación de Indicadores por Dependencia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+    
+        # Gráfico 4 comparando resultados según provincia 
+    df_pro = df.groupby(['nom_reg_rbd', 'ind', 'nom_pro_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por provincia
+    fig4= go.Figure()
+
+    # Iterar por cada provincia
+    for provincia in df_pro['nom_pro_rbd'].unique():
+        df_filtrado = df_pro[df_pro['nom_pro_rbd'] == provincia]
+
+        fig4.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=provincia,  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig4.update_layout(
+        title="Comparación de Indicadores por Provincia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+
+    grafico_html =fig.to_html()
+    grafico_zona =fig2.to_html()
+    grafico_dependencia =fig3.to_html()
+    grafico_provincia =fig4.to_html()
+
+    # Prueba de chi-cuadrado para zona (Rural/Urbano)
+    tabla_zona = df.pivot_table(index='ind', columns='cod_rural_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_zona, p_zona, _, _ = chi2_contingency(tabla_zona)
+
+    # Prueba de chi-cuadrado para dependencia
+    tabla_depe = df.pivot_table(index='ind', columns='cod_depe2', values='prom', aggfunc='mean').fillna(0)
+    chi2_depe, p_depe, _, _ = chi2_contingency(tabla_depe)
+
+    # Prueba de chi-cuadrado para provincia
+    tabla_pro = df.pivot_table(index='ind', columns='nom_pro_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_pro, p_pro, _, _ = chi2_contingency(tabla_pro)
+
+    return render(request, 'educacion/graficos_idps23_4.html', {'grafico_html': grafico_html,
+                                                                'grafico_zona': grafico_zona,
+                                                                'grafico_dependencia':grafico_dependencia,
+                                                                'grafico_provincia':grafico_provincia,
+                                                                'nom_reg_rbd': region_seleccionada,
+                                                                'chi2_zona': round(chi2_zona,2),
+                                                                'chi2_depe':round(chi2_depe,2),
+                                                                'chi2_pro':round(chi2_pro,2),
+                                                                'p_zona':round(p_zona,4),
+                                                                'p_depe':round(p_depe,4),
+                                                                'p_pro':round(p_pro,4)})
+
+def grafico_resultados_idps23_2(request):
+
+    regiones = {
+        "METROPOLITANA DE SANTIAGO": "Región Metropolitana",
+        "DE TARAPACÁ": "Región de Tarapacá",
+        "DE ANTOFAGASTA": "Región de Antofagasta",
+        "DE ATACAMA": "Región de Atacama",
+        "DE COQUIMBO": "Región de Coquimbo",
+        "DE VALPARAÍSO": "Región de Valparaíso",
+        "DEL LIBERTADOR BERNARDO O": "Región del Libertador Gral. Bernardo OHiggins",
+        "DEL MAULE": "Región del Maule",
+        "DEL BIOBÍO": "Región del Biobío",
+        "DE LA ARAUCANÍA": "Región de la Araucanía",
+        "DE LOS LAGOS": "Región de Los Lagos",
+        "DE AYSÉN DEL GENERAL CARL": "Región de Aysén del Gral. Carlos Ibáñez del Campo",
+        "DE MAGALLANES Y DE LA ANT": "Región de Magallanes y de la Antártica Chilena",
+        "DE LOS RÍOS": "Región de Los Ríos",
+        "DE ARICA Y PARINACOTA": "Región de Arica y Parinacota",
+        "DE ÑUBLE": "Región de Ñuble"
+    }
+
+    zona = {
+        1: "Urbano",
+        2: "Rural"
+    }
+
+    dependencia_cat = {
+        1:"Municipal",
+        2:"Particular subvencionado",
+        3:"Particular pagado",
+        4:"SLEP"
+    }
+
+    ind_cat = {
+        "AM":"Autoestima Académica y Motivación Escolar",
+        "CC":"Clima de Convivencia Escolar",
+        "HV":"Hábitos de Vida Saludable",
+        "PF":"Participación y Formación Ciudadana"
+    }
+
+    colores_indicadores = {
+    "AM": "#EF553B",  # Rojo
+    "CC": "#636EFA",  # Azul
+    "HV": "#D4A017",  # Dorado
+    "PF": "#228B22"   # Verde
+}
+
+    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
+    region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
+
+    # Filtrar los datos por grado y año
+    datos = resultados_simce_idps.objects.filter(grado='2', agno=2023)
+    
+    # Filtrar por región si es necesario
+    if region_seleccionada:
+        datos = datos.filter(nom_reg_rbd=region_seleccionada)
+
+    # Convertir los datos a DataFrame
+    datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom',
+                         'nom_pro_rbd')
+    df = pd.DataFrame(datos)
+
+    # Mapear las regiones
+    df['nom_reg_rbd'] = df['nom_reg_rbd'].map(regiones)
+    df['ind'] = df['ind'].map(ind_cat)
+
+    # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
+    df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
+
+    # Cambiar colores de las barras
+    #colores = px.colors.sequential.Plasma
+    #colores_indicadores = {ind: colores[i % len(colores)] for i, ind in enumerate(df_promedios['ind'].unique())}
+
+
+    # Crear la figura para el gráfico de comparación por región
+    fig = go.Figure()
+
+    # Agregar barras para cada tipo de indicador
+    for indicador in df_promedios['ind'].unique():
+        df_filtrado = df_promedios[df_promedios['ind'] == indicador]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['nom_reg_rbd'],
+            y=df_filtrado['prom'],
+            name=indicador,
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            #marker_color= colores_indicadores[indicador] #colores_indicadores.get(indicador, 'grey')
+        ))
+
+    # Configurar el diseño del gráfico por región
+    fig.update_layout(
+        title="Promedio por Región según Tipo de Indicador",
+        xaxis_title="Región",
+        yaxis_title="Promedio",
+        barmode='group',
+        template="plotly_white"
+    )
+
+    # Gráfico 2 comparando resultados según zona 
+    df_zona = df.groupby(['nom_reg_rbd', 'ind', 'cod_rural_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por zona
+    fig2 = go.Figure()
+
+    # Iterar por cada zona (Rural y Urbano) primero
+    for ruralidad in df_zona['cod_rural_rbd'].unique():
+        df_filtrado = df_zona[df_zona['cod_rural_rbd'] == ruralidad]
+
+        fig2.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=zona[ruralidad],  # La etiqueta solo será "Rural" o "Urbano"
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside',
+            marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig2.update_layout(
+        title="Comparación de Indicadores por Zona",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+     # Gráfico 3 comparando resultados según dependencia 
+    df_depe = df.groupby(['nom_reg_rbd', 'ind', 'cod_depe2'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por dependencia
+    fig3= go.Figure()
+
+    # Iterar por cada dependencia
+    for dependencia in df_depe['cod_depe2'].unique():
+        df_filtrado = df_depe[df_depe['cod_depe2'] == dependencia]
+
+        fig3.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=dependencia_cat[dependencia], 
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig3.update_layout(
+        title="Comparación de Indicadores por Dependencia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+        
+    # Gráfico 4 comparando resultados según provincia 
+    df_pro = df.groupby(['nom_reg_rbd', 'ind', 'nom_pro_rbd'])['prom'].mean().reset_index()
+
+    # Crear la figura para el gráfico de comparación por provincia
+    fig4= go.Figure()
+
+    # Iterar por cada provincia
+    for provincia in df_pro['nom_pro_rbd'].unique():
+        df_filtrado = df_pro[df_pro['nom_pro_rbd'] == provincia]
+
+        fig4.add_trace(go.Bar(
+            x=df_filtrado['ind'],  # Agrupar por Indicador
+            y=df_filtrado['prom'],
+            name=provincia,  
+            text=df_filtrado['prom'].apply(lambda x: f"{x:.2f}"),
+            textposition='inside'
+        ))
+
+    # Configurar el diseño del gráfico
+        fig4.update_layout(
+        title="Comparación de Indicadores por Provincia",
+        xaxis_title="Indicador",
+        yaxis_title="Promedio",
+        barmode='group',  # Agrupar por Indicador
+        template="plotly_white"
+    )
+        
+
+        
     # Convertir ambos gráficos a HTML
     grafico_html = fig.to_html()
     grafico_zona = fig2.to_html()
+    grafico_dependencia = fig3.to_html()
+    grafico_provincia = fig4.to_html()
 
-    return render(request, 'educacion/graficos_idps22_4.html', {
+    # Prueba de chi-cuadrado para zona (Rural/Urbano)
+    tabla_zona = df.pivot_table(index='ind', columns='cod_rural_rbd', values='prom', aggfunc='mean').fillna(0)
+    chi2_zona, p_zona, _, _ = chi2_contingency(tabla_zona)
+
+    # Prueba de chi-cuadrado para dependencia
+    tabla_depe = df.pivot_table(index='ind', columns='cod_depe2', values='prom', aggfunc='mean').fillna(0)
+    chi2_depe, p_depe, _, _ = chi2_contingency(tabla_depe)
+
+    return render(request, 'educacion/graficos_idps23_2.html', {
         'grafico_html': grafico_html,
         'grafico_zona': grafico_zona,
+        'grafico_dependencia':grafico_dependencia,
+        'grafico_provincia':grafico_provincia,
         'nom_reg_rbd': region_seleccionada,
+        'chi2_zona': round(chi2_zona, 2),
+        'p_zona': round(p_zona, 4),
+        'chi2_depe': round(chi2_depe, 2),
+        'p_depe': round(p_depe, 4),
     })

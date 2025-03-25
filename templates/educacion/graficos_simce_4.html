@@ -29,7 +29,6 @@
 
         <label for="nom_reg" class="pt-2">Selecciona una región:</label>
         <select id="nom_reg" name="nom_reg" onchange="filtrarPorRegion()">
-            <option value="">Todas</option>
             <option value="Región metropolitana de santiago" {% if nom_reg == "Región metropolitana de santiago" %}selected{% endif %} >Región Metropolitana</option>
             <option value="Región de Tarapacá" {% if nom_reg == "Región de Tarapacá" %} selected {% endif %}>Región de Tarapacá</option>
             <option value="Región de Antofagasta"{% if nom_reg == "Región de Antofagasta" %} selected {% endif %}>Región de Antofagasta </option>

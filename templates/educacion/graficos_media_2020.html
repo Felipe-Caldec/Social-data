@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gráfico de Género</title>
 <style>
-.grafico-container, .filtro-container {
+.grafico-container, .filtro-container, .resultados {
     display: flex;
     flex-direction: column;
     align-items: center;  /* Centrar horizontalmente */
@@ -29,7 +29,6 @@
 
         <label for="region" class="pt-2">Selecciona una región:</label>
         <select id="region" name="NOM_REG_RBD_A" onchange="filtrarPorRegion()">
-            <option value="">Todas</option>
             <option value="RM" {% if region == "RM" %}selected{% endif %} >Región Metropolitana</option>
             <option value="TPCA" {% if region == "TPCA" %} selected {% endif %}>Región de Tarapacá</option>
             <option value="ANTOF"{% if region == "ANTOF" %} selected {% endif %}>Región de Antofagasta </option>
@@ -68,7 +67,14 @@
 
     <div class="grafico-container">    
         {{ grafico_tipo_html|safe }}
-        </div>
+    </div>
+
+    <div class="resultados">
+            <p> El valor de Chi-cuadrado es {{ chi2_tipo }} lo que da un valor de significancia de {{p_nivel}}, pudiendo concluir que 
+            {% if p_tipo < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
+            {% else %}<strong>Las diferencias no son significativas.</strong></p>
+            {% endif %}
+    </div>
 
 <script>
     function filtrarPorRegion() {

@@ -24,7 +24,7 @@
 <body> 
     <!-- GRAFICO GENERO POR ZONA-->
     <div class="filtro-container">
-        <h2 style="text-align: center; max-width: 40rem">Resultados Índice de Desarrollo Personal y Social en 4° Báscio en 2022 </h2>
+        <h2 style="text-align: center;">Resultados Índice de Desarrollo Personal y Social en 2° Medio en 2022  </h2>
 
 
         <label for="nom_reg_rbd" class="pt-2">Selecciona una región:</label>
@@ -49,11 +49,6 @@
             <option value="DE ARICA Y PARINACOTA"{% if nom_reg_rbd == "DE ARICA Y PARINACOTA" %} selected {% endif %}>Región de Arica y Parinacota</option>
             <option value="DE ÑUBLE"{% if nom_reg_rbd == "DE ÑUBLE" %} selected {% endif %}>Región de Ñuble</option>
         </select>
-
-        <label for="comuna" class="pt-2">Selecciona una comuna:</label>
-        <select id="comuna" name="comuna" disabled>
-            <option value="">Selecciona una comuna</option>
-        </select>
     </div>
 
     <div class="grafico-container">    
@@ -64,10 +59,19 @@
         {{ grafico_zona|safe }}
     </div>
 
+    <div>
+        <div class="resultados">
+            <p> El valor de Chi-cuadrado es {{ chi2_zona }} lo que da un valor de significancia de {{p_zona}}, pudiendo concluir que 
+            {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
+            {% else %}<strong>Las diferencias no son significativas.</strong></p>
+            {% endif %}
+        </div>
+    </div>
+        
+        
     <div class="grafico-container">    
         {{ grafico_dependencia|safe }}
     </div>
-
     <div class="resultados">
         <p> El valor de Chi-cuadrado es {{ chi2_depe }} lo que da un valor de significancia de {{p_depe}}, pudiendo concluir que 
         {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
@@ -78,14 +82,6 @@
     <div class="grafico-container">    
         {{ grafico_provincia|safe }}
     </div>
-
-    <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_pro }} lo que da un valor de significancia de {{p_pro}}, pudiendo concluir que 
-        {% if p_pro < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %}
-    </div>
-    
     <script>
         function filtrarPorRegion() {
             var nom_reg_rbd = document.getElementById("nom_reg_rbd").value;
@@ -95,7 +91,7 @@
         // Mantener seleccionada la región actual
         document.getElementById("nom_reg_rbd").value = "{{ nom_reg_rbd }}";
 
-    
+
     </script>
 </body>
 
