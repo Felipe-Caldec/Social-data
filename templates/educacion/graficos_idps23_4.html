@@ -13,18 +13,26 @@
 .grafico-container, .filtro-container, .resultados {
     display: flex;
     flex-direction: column;
-    align-items: center;  /* Centrar horizontalmente */
-    justify-content: center; /* Centrar verticalmente (opcional) */
-    text-align: center; /* Centrar el texto */
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
     width: 100%;
     padding-top: 2rem;
 }
+
+.resultados {
+    width: 80%;  
+    max-width: 900px;  
+    margin: 0 auto;  
+}
 </style>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
 </head>
 <body> 
     <!-- GRAFICO GENERO POR ZONA-->
     <div class="filtro-container">
-        <h2 style="text-align: center;">Resultados Índice de Desarrollo Personal y Social en 4° Básico en 2023  </h2>
+        <h2 style="text-align: center;">Resultados Índice de Desarrollo Personal y Social</h2>
+        <h2 style="text-align: center;">4° Básico 2023</h2>
 
 
         <label for="nom_reg_rbd" class="pt-2">Selecciona una región:</label>
@@ -81,6 +89,13 @@
 
     <div class="grafico-container">    
         {{ grafico_provincia|safe }}
+    </div>
+
+    <div class="resultados">
+        <p> El valor de Chi-cuadrado es {{ chi2_pro }} lo que da un valor de significancia de {{p_pro}}, pudiendo concluir que 
+        {% if p_pro < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
+        {% else %}<strong>Las diferencias no son significativas.</strong></p>
+        {% endif %}
     </div>
     <script>
         function filtrarPorRegion() {

@@ -2,13 +2,15 @@
 {% block content %}
 {% load static %}
 
-<div class="container mt-5">
-    <h1 class="text-center">Bienvenido a la página de inicio</h1><br><br>
-    <p class="text-center">En esta página encontrarás información sobre pensiones, educación, salud y trabajo en Chile.</p>
-    <p class="text-center">Para navegar por la página, selecciona una de las opciones del menú superior.</p>
-    <p class="text-center">¡Esperamos que encuentres la información que buscas!</p>
-    <img src="" alt="">
-</div>
+<link rel="stylesheet" href="{% static 'css/style_base.css' %}">
+<div class="background-container">
+  <div class="container mt-5 ">
+      <h1 class="text-center">Bienvenido a la página de inicio</h1><br><br>
+      <p class="text-center"><b>En esta página encontrarás información sobre pensiones, educación, salud y trabajo en Chile.</b></p>
+      <p class="text-center"><b>Para navegar por la página, selecciona una de las opciones del menú superior.</b></p>
+      <p class="text-center"><b>¡Esperamos que encuentres la información que buscas!</b></p>
+      <img src="" alt="">
+  </div>
 
 <!-- CARDS -->
 <div class="container"></div>
@@ -17,12 +19,12 @@
       <div class="card mb-3" style="max-width: 540px; margin-left: 2rem;">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src="{% static 'img/pensiones.jpeg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_pensiones">
+            <img src="{% static 'img/pensiones.jpg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_pensiones">
           </div>
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title">Pensiones</h5>
-              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <p class="card-text" style="text-align:justify;">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
             </div>
           </div>
         </div>
@@ -33,12 +35,12 @@
       <div class="card mb-3" style="max-width: 540px; margin-left: 2rem;">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src="{% static 'img/educacion.jpeg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_educacion">
+            <img src="{% static 'img/educacion.png'%}" class="img-fluid rounded-start h-100 w-100" alt="img_educacion">
           </div>
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title"><a href="{% url 'niveles'%}">Educación</a></h5>
-              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <p class="card-text" style="text-align:justify;"> Encontrarás información sobre matrículas de estudiantes por nivel, resultados SIMCE, dotación docente y administrativa, además de resultados académicos. Todo ello diferenciado por región </p>
             </div>
           </div>
         </div>
@@ -49,7 +51,7 @@
       <div class="card mb-3" style="max-width: 540px; margin-left: 2rem">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src="{% static 'img/salud.jpeg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_salud">
+            <img src="{% static 'img/salud.jpg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_salud">
           </div>
           <div class="col-md-8">
             <div class="card-body">
@@ -65,7 +67,7 @@
       <div class="card mb-3" style="max-width: 540px; margin-left: 2rem;">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src="{% static 'img/trabajo.jpeg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_trabajo">
+            <img src="{% static 'img/trabajo.jpg'%}" class="img-fluid rounded-start h-100 w-100" alt="img_trabajo">
           </div>
           <div class="col-md-8">
             <div class="card-body">

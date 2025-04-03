@@ -8,41 +8,49 @@
     <div class="row row-cols-1 row-cols-md-2 g-4" >
       <div class="col">
         <div class="card">
-          <img src="{% static 'img/educacion/dependencia.png' %}" class="card-img-top" alt="img_pensiones"
+          <img src="{% static 'img/educacion/matriculas.jpg' %}" class="card-img-top" alt="img_matriculas"
           style="max-width: 100%; max-height: 300px; object-fit: contain;">
           <div class="card-body">
             <h5 class="card-title"><a href="{% url 'lista-matriculas-view' %}">Matrículas</a></h5>
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+            <p class="card-text" style="text-align:justify;"> Aquí podrás encontrar un análisis del registro anual de matrículas desde 2020 en adelante. Encontrarás
+              las matrículas desde Educación Parvularia hasta Educación Superior. Los análisis se basan en la Zona, Género,
+              Dependencia y Tipo de Enseñanza de l@s estudiantes buscando observar si existen relación entre las
+              variables.
+            </p>
           </div>
         </div>
       </div>
       <div class="col">
         <div class="card">
-          <img src="{% static 'img/educacion/regiones.png' %}" class="card-img-top" alt="img_comisiones"
+          <img src="{% static 'img/educacion/simce.jpg' %}" class="card-img-top" alt="img_simce"
           style="max-width: 100%; max-height: 300px; object-fit: contain;">
           <div class="card-body">
             <h5 class="card-title"><a href="{% url 'lista-simce-view' %}">Resultados Simce</a></h5>
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+            <p class="card-text" style="text-align:justify;"> Se muestran los resultados del Simce 2022 y 2023 comparando si existen diferencias 
+                  significativas entre ellos. Además, se analizan los resultados del Índice de Desarrollo Personal 
+                  y Social (IDPS) que considera las percepciones su capacidad de aprender y logro académico.</p>
           </div>
         </div>
       </div>
       <div class="col">
         <div class="card">
-          <img src="{% static 'img/educacion/matricula.png' %}" class="card-img-top" alt="img_cotizaciones"
+          <img src="{% static 'img/educacion/docentes.jpg' %}" class="card-img-top" alt="img_cotizaciones"
           style="max-width: 100%; max-height: 300px; object-fit: contain;">
           <div class="card-body">
-            <h5 class="card-title">Educación Media</h5>
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content.</p>
+            <h5 class="card-title"><a href="{% url 'lista-docentes-view' %}">Dotación Docente</a></h5>
+            <p class="card-text" style="text-align:justify;">En esta sección se muestra la cantidad de docentes y administrativos que trabajan
+                                en los colegios, calculando la cantidad de horas totales y promedio según 
+                                Zona y Dependencia  </p>
           </div>
         </div>
       </div>
       <div class="col">
         <div class="card">
-          <img src="{% static 'img/educacion/nivel.png' %}" class="card-img-top" alt="img_calculo" 
+          <img src="{% static 'img/educacion/resultados_academicos.jpg' %}" class="card-img-top" alt="img_calculo" 
           style="max-width: 100%; max-height: 300px; object-fit: contain;">
           <div class="card-body">
-            <h5 class="card-title">Educación Superior</h5>
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+            <h5 class="card-title"><a href="#">Resultados académicos estudiantes</a></h5>
+            <p class="card-text" style="text-align:justify;">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
           </div>
         </div>
       </div>

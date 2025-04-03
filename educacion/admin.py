@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import matricula_parvulo, matricula_basica, matricula_media, resultados_simce, resultados_simce_idps
+from .models import matricula_superior, dotacion_docente,rendimiento_academico
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from django.core.exceptions import ValidationError
@@ -95,7 +96,7 @@ class MatriculaMediaResource(resources.ModelResource):
         # chunk_size = 500 duplica importacion
 
     def before_import(self, dataset, **kwargs):
-        existing_records = set(matricula_basica.objects.values_list("MRUN", "AGNO"))
+        existing_records = set(matricula_media.objects.values_list("MRUN", "AGNO"))
         new_records = set((row["MRUN"], row["AGNO"]) for row in dataset.dict)
         post_save.disconnect(sender=matricula_media)
 
@@ -123,6 +124,44 @@ class MatriculaMediaAdmin(ImportExportModelAdmin):
         return True
     
 
+    ############## EDUCACION SUPERIOR ##################################
+
+    
+class MatriculaSuperiorResource(resources.ModelResource):
+    class Meta:
+        model = matricula_superior
+        skip_unchanged = True  # Evita reimportar registros sin cambios
+        use_bulk = False  # Inserción masiva para mayor eficiencia, en TRUE duplica importacion
+        # chunk_size = 500 duplica importacion
+
+    def before_import(self, dataset, **kwargs):
+        existing_records = set(matricula_superior.objects.values_list("mrun", "cat_periodo"))
+        new_records = set((row["mrun"], row["cat_periodo"]) for row in dataset.dict)
+        post_save.disconnect(sender=matricula_superior)
+
+        if new_records & existing_records:
+            raise ValidationError("Algunos registros ya existen en la base de datos. Revisa el archivo antes de importar.")
+
+        
+        
+
+@admin.register(matricula_superior)
+class MatriculaSuperiorAdmin(ImportExportModelAdmin):
+    resource_class = MatriculaSuperiorResource
+    list_display = ('cat_periodo', 'region_sede', 'gen_alu','mrun')
+    list_filter = ('cat_periodo', 'region_sede')
+
+    def get_import_formats(self):
+        formats = super().get_import_formats()
+        for format_instance in formats:
+            if hasattr(format_instance, "can_preview"):
+                format_instance.can_preview = False  # Desactiva la previsualización
+        return formats
+
+    def get_skip_confirmation(self, request, *args, **kwargs):
+        """Omite la confirmación antes de la importación."""
+        return True
+
 ############## RESULTADOS SIMCE ##################################
 
 class ResultadosSimceResource(resources.ModelResource):
@@ -145,3 +184,26 @@ class ResultadosSimceIDPSResource(resources.ModelResource):
 class ProductoAdmin(ImportExportModelAdmin):
     resource_class = ResultadosSimceIDPSResource
     list_display = ('agno', 'nom_reg_rbd', 'grado')
+
+############## DOTACION DOCENTE ##################################
+
+class ResultadosDotacionDocenteResource(resources.ModelResource):
+    class Meta:
+        model = dotacion_docente
+
+@admin.register(dotacion_docente)
+class ProductoAdmin(ImportExportModelAdmin):
+    resource_class = ResultadosDotacionDocenteResource
+    list_display = ('AGNO', 'NOM_REG_RBD_A')
+
+############## RENDIMIENTO ACADEMICO ##################################
+
+class RendimientoAcademicoResource(resources.ModelResource):
+    class Meta:
+        model = rendimiento_academico
+
+@admin.register(rendimiento_academico)
+class ProductoAdmin(ImportExportModelAdmin):
+    resource_class = RendimientoAcademicoResource
+    list_display = ('AGNO', 'COD_REG_RBD')
+

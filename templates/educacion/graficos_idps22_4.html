@@ -1,6 +1,7 @@
 {% extends 'base.html'%}
 {% block content %}
 {% load bootstrap5 %}
+{% load static %}
 
 
 <!DOCTYPE html>
@@ -13,19 +14,26 @@
 .grafico-container, .filtro-container, .resultados {
     display: flex;
     flex-direction: column;
-    align-items: center;  /* Centrar horizontalmente */
-    justify-content: center; /* Centrar verticalmente (opcional) */
-    text-align: center; /* Centrar el texto */
+    align-items: center;  
+    justify-content: center; 
+    text-align: center; 
     width: 100%;
     padding-top: 2rem;
 }
-</style>
-</head>
-<body> 
-    <!-- GRAFICO GENERO POR ZONA-->
-    <div class="filtro-container">
-        <h2 style="text-align: center; max-width: 40rem">Resultados Índice de Desarrollo Personal y Social en 4° Báscio en 2022 </h2>
 
+.resultados {
+    width: 80%;  
+    max-width: 900px;  
+    margin: 0 auto;  
+}
+</style>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
+</head>
+<body class="background-container"> 
+    <!-- GRAFICO GENERO POR ZONA-->
+    <div class="filtro-container" style="background-color: white; max-width: 55%; justify-self:center">
+        <h2 style="text-align: center; max-width: 40rem">Resultados Índice de Desarrollo Personal y Social</h2>
+        <h2 style="text-align: center; max-width: 40rem">4° Básico 2022</h2>
 
         <label for="nom_reg_rbd" class="pt-2">Selecciona una región:</label>
         <select id="nom_reg_rbd" name="nom_reg_rbd" onchange="filtrarPorRegion()">
@@ -50,10 +58,6 @@
             <option value="DE ÑUBLE"{% if nom_reg_rbd == "DE ÑUBLE" %} selected {% endif %}>Región de Ñuble</option>
         </select>
 
-        <label for="comuna" class="pt-2">Selecciona una comuna:</label>
-        <select id="comuna" name="comuna" disabled>
-            <option value="">Selecciona una comuna</option>
-        </select>
     </div>
 
     <div class="grafico-container">    
@@ -62,6 +66,15 @@
 
     <div class="grafico-container">    
         {{ grafico_zona|safe }}
+    </div>
+
+    <div style="background-color: white; max-width: 55.35%; justify-self:center">
+        <div class="resultados" >
+            <p> El valor de Chi-cuadrado es {{ chi2_zona }} lo que da un valor de significancia de {{p_zona}}, pudiendo concluir que 
+            {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
+            {% else %}<strong>Las diferencias no son significativas.</strong></p>
+            {% endif %}
+        </div>
     </div>
 
     <div class="grafico-container">    

@@ -1,7 +1,7 @@
 {% extends 'base.html'%}
 {% block content %}
 {% load bootstrap5 %}
-
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="es">
@@ -13,13 +13,20 @@
 .grafico-container, .filtro-container, .resultados {
     display: flex;
     flex-direction: column;
-    align-items: center;  /* Centrar horizontalmente */
-    justify-content: center; /* Centrar verticalmente (opcional) */
-    text-align: center; /* Centrar el texto */
+    align-items: center;  
+    justify-content: center; 
+    text-align: center; 
     width: 100%;
     padding-top: 2rem;
 }
+
+.resultados {
+    width: 80%;  
+    max-width: 900px;  
+    margin: 0 auto;  
+}
 </style>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
 </head>
 <body> 
     <!-- GRAFICO GENERO POR ZONA-->
@@ -70,10 +77,18 @@
     </div>
 
     <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_tipo }} lo que da un valor de significancia de {{p_nivel}}, pudiendo concluir que 
-        {% if p_tipo < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %}
+        <p>Para analizar esta información se utilizó la prueba de Chi-2 que permite determinar si existe 
+            relación entre 2 variables cualitativas. Para ello usa tablas de contingencia donde se comparan
+            los valores observados y los valores esperados 
+            (<a href="https://www.youtube.com/watch?v=Vzqha_RO4ZY&ab_channel=Dr.AlejandroMac%C3%ADas" target="_blank">ver más</a>). 
+            Para este caso el valor de Chi-cuadrado es {{ chi2_tipo }} lo que da un valor de significancia de 
+            {{p_tipo}}, siendo {% if p_tipo < 0.05 %}<strong>las diferencias son estadísticamente significativas</strong>
+            {% else %}<strong>as diferencias no son significativas.</strong></p>
+            {% endif %}
+            <p> V de Cramer es otro estadístico que permite medir la fuerza de la reclación entre 2 variables 
+                cualitativas, en este caso ese valor es de {{va_cramer}}, lo que indica que la relación entre ambas 
+                variables es {% if va_cramer > 0.6 %} <strong>fuerte</strong>{% elif va_cramer <= 0.6 and va_cramer > 0.2 %}
+                <strong>media</strong> {% else %} <strong> débil</strong>{% endif %}</p>
     </div>
 
 <script>

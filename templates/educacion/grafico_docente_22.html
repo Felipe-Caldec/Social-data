@@ -1,0 +1,70 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load bootstrap5 %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Género</title>
+<style>
+.grafico-container, .filtro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
+    justify-content: center; 
+    text-align: center; 
+    width: 100%;
+    padding-top: 2rem;
+}
+</style>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
+</head>
+<body> 
+    <!-- GRAFICO GENERO POR ZONA-->
+    <div class="filtro-container">
+        <h2 style="text-align: center;">Gráficos de Dotación Docente 2022</h2>
+
+        <label for="region" class="pt-2">Selecciona una región:</label>
+        <select id="region" name="NOM_REG_RBD_A" onchange="filtrarPorRegion()">
+            <option value="RM" {% if NOM_REG_RBD_A == "RM" %}selected{% endif %} >Región Metropolitana</option>
+            <option value="TPCA" {% if NOM_REG_RBD_A == "TPCA" %} selected {% endif %}>Región de Tarapacá</option>
+            <option value="ANTOF"{% if NOM_REG_RBD_A == "ANTOF" %} selected {% endif %}>Región de Antofagasta </option>
+            <option value="ATCMA"{% if NOM_REG_RBD_A == "ATCM" %} selected {% endif %}>Región de Atacama </option>
+            <option value="COQ"{% if NOM_REG_RBD_A == "COQ" %} selected {% endif %}>Región de Coquimbo</option>
+            <option value="VALPO"{% if NOM_REG_RBD_A == "VALPO" %} selected {% endif %}>Región de Valparaíso</option>
+            <option value="LGBO"{% if NOM_REG_RBD_A == "LGBO" %} selected {% endif %}>Región del Libertador 
+                Gral. Bernardo OHiggins</option>
+            <option value="MAULE"{% if NOM_REG_RBD_A == "MAULE" %} selected {% endif %}>Región del Maule </option>
+            <option value="BBIO"{% if NOM_REG_RBD_A == "BBIO" %} selected {% endif %}>Región del Biobío</option>
+            <option value="ARAUC"{% if NOM_REG_RBD_A == "ARAUC" %} selected {% endif %}>Región de la Araucanía</option>
+            <option value="LAGOS"{% if NOM_REG_RBD_A == "LAGOS" %} selected {% endif %}>Región de Los Lagos</option>
+            <option value="AYSEN"{% if NOM_REG_RBD_A == "AYSEN" %} selected {% endif %}>Región de Aysén del Gral. 
+                Carlos Ibáñez del Campo</option>
+            <option value="MAG"{% if NOM_REG_RBD_A == "MAG" %} selected {% endif %}>Región de Magallanes y 
+                de la Antártica Chilena </option>
+            <option value="RIOS"{% if NOM_REG_RBD_A == "RIOS" %} selected {% endif %}>Región de Los Ríos</option>
+            <option value="AYP"{% if NOM_REG_RBD_A == "AYP" %} selected {% endif %}>Región de Arica y Parinacota</option>
+            <option value="NUBLE"{% if NOM_REG_RBD_A == "NUBLE" %} selected {% endif %}>Región de Ñuble</option>
+        </select>
+    </div>
+
+    <div class="grafico-container">    
+    {{ grafico_depe|safe }}
+    </div>
+
+    <script>
+        function filtrarPorRegion() {
+            var region = document.getElementById("region").value;
+            window.location.href = "?NOM_REG_RBD_A=" + region;
+        }
+    
+        // Mantener seleccionada la región actual
+        document.getElementById("region").value = "{{ region }}";
+    </script>
+    
+    </body>
+    </html>
+    {% endblock %}

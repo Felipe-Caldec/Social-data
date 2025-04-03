@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Navbar</title>
 
+
         {% load bootstrap5 %}
         {% bootstrap_css %}
         {% bootstrap_javascript %}
@@ -50,7 +51,7 @@
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="{% url 'lista-matriculas-view' %}">Matrículas</a></li>
                   <li><a class="dropdown-item" href="{% url 'lista-simce-view'%}">Simce</a></li>
-                  <li><a class="dropdown-item" href="#">Resultados académicos</a></li>
+                  <li><a class="dropdown-item" href="{% url 'lista-docentes-view'%}">Dotación Docente</a></li>
                 </ul>
               </li>
             </ul>

@@ -2,7 +2,7 @@ import pandas as pd
 
 
 # 1️⃣ Cargar el archivo CSV
-df = pd.read_csv(r"C:\Users\olgac\OneDrive\Desktop\matricula_basica_media_2020.csv", sep=";", quotechar='"')
+df = pd.read_csv(r"C:\Users\olgac\OneDrive\Desktop\matriculas_superior_2020.csv", sep=";", quotechar='"')
 
 # 2️⃣ Eliminar columnas que no están en 'columnas_modelo'
 columnas_modelo = ["AGNO", "RBD", "NOM_RBD","GEN_ALU", "COD_REG_RBD", "NOM_REG_RBD_A", "COD_PRO_RBD",
