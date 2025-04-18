@@ -193,6 +193,6 @@ class rendimiento_academico(models.Model):
     EDAD_ALU= models.IntegerField(null=True)
     NOM_COM_ALU= models.CharField(null=True)
     COD_JOR= models.IntegerField(null=True)
-    PROM_GRAL= models.IntegerField(null=True)
+    PROM_GRAL= models.DecimalField(null=True, decimal_places=1, max_digits=3)
     ASISTENCIA= models.IntegerField(null=True)
-    SIT_FIN_R= models.IntegerField(null=True)
+    SIT_FIN_R= models.CharField(null=True)

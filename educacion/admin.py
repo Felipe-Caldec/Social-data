@@ -206,4 +206,5 @@ class RendimientoAcademicoResource(resources.ModelResource):
 class ProductoAdmin(ImportExportModelAdmin):
     resource_class = RendimientoAcademicoResource
     list_display = ('AGNO', 'COD_REG_RBD')
+    list_filter = ('AGNO', 'COD_REG_RBD')
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import matricula_parvulo, matricula_basica, matricula_media, resultados_simce, resultados_simce_idps
-from .models import dotacion_docente
+from .models import dotacion_docente, matricula_superior, rendimiento_academico
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from .forms import Estudiantes_filtro
@@ -72,6 +72,9 @@ def lista_simce_view (request):
 
 def lista_docentes_view (request):
     return render (request, 'educacion/lista_docente.html')
+
+def lista_rendimiento_view (request):
+    return render (request, 'educacion/lista_rendimiento.html')
 
 
 ##############################  GRAFICOS MATRICULA PARVULO  ############################################
@@ -161,7 +164,7 @@ def grafico_matricula_parvulo_2021 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -194,7 +197,7 @@ def grafico_matricula_parvulo_2021 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -227,7 +230,7 @@ def grafico_matricula_parvulo_2021 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -260,10 +263,10 @@ def grafico_matricula_parvulo_2021 (request):
 
     fig4.update_layout(
         barmode='group',
-        title="Gráfico género según nivel",
+        title="Gráfico zona según nivel",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -398,7 +401,7 @@ def grafico_matricula_parvulo_2022(request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2, 
         bargroupgap=0.1,  
@@ -431,7 +434,7 @@ def grafico_matricula_parvulo_2022(request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -464,7 +467,7 @@ def grafico_matricula_parvulo_2022(request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -497,10 +500,10 @@ def grafico_matricula_parvulo_2022(request):
 
     fig4.update_layout(
         barmode='group',
-        title="Gráfico género según nivel",
+        title="Gráfico zona según nivel",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -634,7 +637,7 @@ def grafico_matricula_parvulo_2023(request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -667,7 +670,7 @@ def grafico_matricula_parvulo_2023(request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -700,7 +703,7 @@ def grafico_matricula_parvulo_2023(request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -733,10 +736,10 @@ def grafico_matricula_parvulo_2023(request):
 
     fig4.update_layout(
         barmode='group',
-        title="Gráfico género según nivel",
+        title="Gráfico zona según nivel",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -867,7 +870,7 @@ def grafico_matricula_parvulo_2024(request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -901,7 +904,7 @@ def grafico_matricula_parvulo_2024(request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -934,7 +937,7 @@ def grafico_matricula_parvulo_2024(request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -968,10 +971,10 @@ def grafico_matricula_parvulo_2024(request):
 
     fig4.update_layout(
         barmode='group',
-        title="Gráfico género según nivel",
+        title="Gráfico zona según nivel",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1104,7 +1107,7 @@ def grafico_matricula_parvulo_2020(request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -1137,7 +1140,7 @@ def grafico_matricula_parvulo_2020(request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1171,7 +1174,7 @@ def grafico_matricula_parvulo_2020(request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1203,10 +1206,10 @@ def grafico_matricula_parvulo_2020(request):
 
     fig4.update_layout(
         barmode='group',
-        title="Gráfico género según nivel",
+        title="Gráfico zona según nivel",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1465,7 +1468,7 @@ def grafico_matricula_basica_2023 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -1498,7 +1501,7 @@ def grafico_matricula_basica_2023 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1531,7 +1534,7 @@ def grafico_matricula_basica_2023 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1565,7 +1568,7 @@ def grafico_matricula_basica_2023 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1667,7 +1670,7 @@ def grafico_matricula_basica_2022 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2, 
         bargroupgap=0.1, 
@@ -1700,7 +1703,7 @@ def grafico_matricula_basica_2022 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1733,7 +1736,7 @@ def grafico_matricula_basica_2022 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1830,7 +1833,7 @@ def grafico_matricula_basica_2021 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -1863,7 +1866,7 @@ def grafico_matricula_basica_2021 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1896,7 +1899,7 @@ def grafico_matricula_basica_2021 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -1994,7 +1997,7 @@ def grafico_matricula_basica_2020 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1, 
@@ -2027,7 +2030,7 @@ def grafico_matricula_basica_2020 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2060,7 +2063,7 @@ def grafico_matricula_basica_2020 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2157,7 +2160,7 @@ def grafico_matricula_media_2023 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -2190,7 +2193,7 @@ def grafico_matricula_media_2023 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2226,7 +2229,7 @@ def grafico_matricula_media_2023 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2343,7 +2346,7 @@ def grafico_matricula_media_2022 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -2376,7 +2379,7 @@ def grafico_matricula_media_2022 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2411,7 +2414,7 @@ def grafico_matricula_media_2022 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2525,7 +2528,7 @@ def grafico_matricula_media_2021 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -2558,7 +2561,7 @@ def grafico_matricula_media_2021 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2593,7 +2596,7 @@ def grafico_matricula_media_2021 (request):
         title="Gráfico zona según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2710,7 +2713,7 @@ def grafico_matricula_media_2020 (request):
         title="Gráfico género según zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.2,  
         bargroupgap=0.1,  
@@ -2744,7 +2747,7 @@ def grafico_matricula_media_2020 (request):
         title="Gráfico género según dependencia administrativa",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Género",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2780,7 +2783,7 @@ def grafico_matricula_media_2020 (request):
         title="Gráfico género según tipo",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
         xaxis_title="Zona",
         bargap=0.1,
         bargroupgap=0.1,
@@ -2817,6 +2820,670 @@ def grafico_matricula_media_2020 (request):
                                                       'p_tipo': round(p_tipo,2),
                                                       'va_cramer': round(va_cramer,2),
                                                       'region': region_seleccionada})
+
+#########################    GRAFICOS MATRICULA SUPERIOR  ########################################### 
+
+def grafico_matricula_superior_2024 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+
+    # Obtener la región seleccionada desde la URL 
+    region_seleccionada = request.GET.get('region_sede', "Metropolitana")
+
+    datos = matricula_superior.objects.filter(cat_periodo=2024)
+    
+    # Obtener datos del modelo, filtrando por región si se especifica
+    if region_seleccionada:
+        datos = datos.filter(region_sede=region_seleccionada)
+
+    datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
+                        'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
+                        'nivel_carrera_2','acreditada_carr')
+    df = pd.DataFrame(datos)
+
+    df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Edad','Cantidad']
+    
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_edad = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_edad) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for edad in conteo['Edad'].unique():
+        df_filtrado = conteo[conteo['Edad'] == edad]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=edad,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        barmode='group',  
+        title="Gráfico género según edad",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 60]),
+        xaxis_title="Género",
+        bargap=0.2,  
+        bargroupgap=0.1,  
+        autosize= True
+    )
+
+### Gráfico 2: Distribución género segun dependencia
+
+    conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo Institucion', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig2 = go.Figure()
+
+    for tipo in conteo_tipo['Tipo Institucion'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según Tipo de Institución",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje",  range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### Gráfico 3: Distribución género segun tipo de enseñanza
+
+    conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
+    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
+
+    fig3 = go.Figure()
+
+    for area in conteo_area['Area Conocimiento'].unique():
+        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Genero'],
+            y = df_filtrado['Porcentaje'],
+            name= area, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 60]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+    grafico_genero_edad_html = fig.to_html()
+    grafico_genero_tipo_html = fig2.to_html()
+    grafico_genero_area_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_superior_2024.html', {'grafico_html': grafico_genero_edad_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_area_html': grafico_genero_area_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_superior_2023 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+
+
+        # Obtener la región seleccionada desde la URL 
+    region_seleccionada = request.GET.get('region_sede', "Metropolitana")
+
+    datos = matricula_superior.objects.filter(cat_periodo=2023)
+    
+    # Obtener datos del modelo, filtrando por región si se especifica
+    if region_seleccionada:
+        datos = datos.filter(region_sede=region_seleccionada)
+
+    datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
+                        'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
+                        'nivel_carrera_2','acreditada_carr')
+    df = pd.DataFrame(datos)
+
+    df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Edad','Cantidad']
+    
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_edad = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_edad) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for edad in conteo['Edad'].unique():
+        df_filtrado = conteo[conteo['Edad'] == edad]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=edad,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        barmode='group',  
+        title="Gráfico género según edad",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  
+        bargroupgap=0.1,  
+        autosize= True
+    )
+
+### Gráfico 2: Distribución género segun dependencia
+
+    conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo Institucion', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig2 = go.Figure()
+
+    for tipo in conteo_tipo['Tipo Institucion'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según Tipo de Institución",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### Gráfico 3: Distribución género segun tipo de enseñanza
+
+    conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
+    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
+
+    fig3 = go.Figure()
+
+    for area in conteo_area['Area Conocimiento'].unique():
+        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Genero'],
+            y = df_filtrado['Porcentaje'],
+            name= area, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+    grafico_genero_edad_html = fig.to_html()
+    grafico_genero_tipo_html = fig2.to_html()
+    grafico_genero_area_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_superior_2023.html', {'grafico_html': grafico_genero_edad_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_area_html': grafico_genero_area_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_superior_2022 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+
+        # Obtener la región seleccionada desde la URL 
+    region_seleccionada = request.GET.get('region_sede', "Metropolitana")
+
+    datos = matricula_superior.objects.filter(cat_periodo=2022)
+    
+    # Obtener datos del modelo, filtrando por región si se especifica
+    if region_seleccionada:
+        datos = datos.filter(region_sede=region_seleccionada)
+
+    datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
+                        'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
+                        'nivel_carrera_2','acreditada_carr')
+    df = pd.DataFrame(datos)
+
+    df['gen_alu'] = df['gen_alu'].map(categorias_genero)
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Edad','Cantidad']
+    
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_edad = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_edad) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for edad in conteo['Edad'].unique():
+        df_filtrado = conteo[conteo['Edad'] == edad]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=edad,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        barmode='group',  
+        title="Gráfico género según edad",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  
+        bargroupgap=0.1,  
+        autosize= True
+    )
+
+### Gráfico 2: Distribución género segun dependencia
+
+    conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo Institucion', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig2 = go.Figure()
+
+    for tipo in conteo_tipo['Tipo Institucion'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según Tipo de Institución",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### Gráfico 3: Distribución género segun tipo de enseñanza
+
+    conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
+    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
+
+    fig3 = go.Figure()
+
+    for area in conteo_area['Area Conocimiento'].unique():
+        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Genero'],
+            y = df_filtrado['Porcentaje'],
+            name= area, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+    grafico_genero_edad_html = fig.to_html()
+    grafico_genero_tipo_html = fig2.to_html()
+    grafico_genero_area_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_superior_2022.html', {'grafico_html': grafico_genero_edad_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_area_html': grafico_genero_area_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_superior_2021 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+
+        # Obtener la región seleccionada desde la URL 
+    region_seleccionada = request.GET.get('region_sede', "Metropolitana")
+
+    datos = matricula_superior.objects.filter(cat_periodo=2021)
+    
+    # Obtener datos del modelo, filtrando por región si se especifica
+    if region_seleccionada:
+        datos = datos.filter(region_sede=region_seleccionada)
+
+    datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
+                        'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
+                        'nivel_carrera_2','acreditada_carr')
+    df = pd.DataFrame(datos)
+
+    df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Edad','Cantidad']
+    
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_edad = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_edad) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for edad in conteo['Edad'].unique():
+        df_filtrado = conteo[conteo['Edad'] == edad]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=edad,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        barmode='group',  
+        title="Gráfico género según edad",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  
+        bargroupgap=0.1,  
+        autosize= True
+    )
+
+### Gráfico 2: Distribución género segun dependencia
+
+    conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo Institucion', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig2 = go.Figure()
+
+    for tipo in conteo_tipo['Tipo Institucion'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según Tipo de Institución",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### Gráfico 3: Distribución género segun tipo de enseñanza
+
+    conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
+    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
+
+    fig3 = go.Figure()
+
+    for area in conteo_area['Area Conocimiento'].unique():
+        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Genero'],
+            y = df_filtrado['Porcentaje'],
+            name= area, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+    grafico_genero_edad_html = fig.to_html()
+    grafico_genero_tipo_html = fig2.to_html()
+    grafico_genero_area_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_superior_2021.html', {'grafico_html': grafico_genero_edad_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_area_html': grafico_genero_area_html,
+                                                      'region': region_seleccionada})
+
+def grafico_matricula_superior_2020 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+
+        # Obtener la región seleccionada desde la URL 
+    region_seleccionada = request.GET.get('region_sede', "Metropolitana")
+
+    datos = matricula_superior.objects.filter(cat_periodo=2020)
+    
+    # Obtener datos del modelo, filtrando por región si se especifica
+    if region_seleccionada:
+        datos = datos.filter(region_sede=region_seleccionada)
+
+    datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
+                        'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
+                        'nivel_carrera_2','acreditada_carr')
+    df = pd.DataFrame(datos)
+
+    df['gen_alu'] = df['gen_alu'].map(categorias_genero)
+
+     # Contar cuántos hay de cada género
+    conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
+    conteo.columns = ['Género','Edad','Cantidad']
+    
+    # Calcular el total por zona para obtener porcentajes
+    totales_por_edad = conteo.groupby('Género')['Cantidad'].transform('sum')
+    conteo['Porcentaje'] = (conteo['Cantidad'] / totales_por_edad) * 100
+
+
+# Crear la figura manualmente
+    fig = go.Figure()
+
+    for edad in conteo['Edad'].unique():
+        df_filtrado = conteo[conteo['Edad'] == edad]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Porcentaje'],
+            name=edad,  # Esto agrupará las barras por zona
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        barmode='group',  
+        title="Gráfico género según edad",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.2,  
+        bargroupgap=0.1,  
+        autosize= True
+    )
+
+### Gráfico 2: Distribución género segun dependencia
+
+    conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
+    conteo_tipo.columns = ['Género','Tipo Institucion', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
+    conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
+
+    fig2 = go.Figure()
+
+    for tipo in conteo_tipo['Tipo Institucion'].unique():
+        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
+        fig2.add_trace(go.Bar(
+            x =df_filtrado['Género'],
+            y = df_filtrado['Porcentaje'],
+            name= tipo, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig2.update_layout(
+        barmode='group',
+        title="Gráfico género según Tipo de Institución",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Género",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+### Gráfico 3: Distribución género segun tipo de enseñanza
+
+    conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
+    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+
+# Calcular porcentaje total
+    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
+
+    fig3 = go.Figure()
+
+    for area in conteo_area['Area Conocimiento'].unique():
+        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
+        fig3.add_trace(go.Bar(
+            x =df_filtrado['Genero'],
+            y = df_filtrado['Porcentaje'],
+            name= area, 
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
+            textposition= 'auto'
+            ))
+
+    fig3.update_layout(
+        barmode='group',
+        title="Gráfico género según tipo",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Porcentaje", range=[0, 100]),
+        xaxis_title="Zona",
+        bargap=0.1,
+        bargroupgap=0.1,
+        autosize= True,
+    )
+
+    grafico_genero_edad_html = fig.to_html()
+    grafico_genero_tipo_html = fig2.to_html()
+    grafico_genero_area_html = fig3.to_html()
+
+    return render(request, 'educacion/graficos_superior_2020.html', {'grafico_html': grafico_genero_edad_html,
+                                                      'grafico_tipo_html': grafico_genero_tipo_html,
+                                                      'grafico_area_html': grafico_genero_area_html,
+                                                      'region': region_seleccionada})
+
 
 ############################  RESULTADOS SIMCE   #############################################
        
@@ -3065,8 +3732,10 @@ def grafico_resultados_idps22_4 (request):
         title="Promedio por Región según Tipo de Indicador",
         xaxis_title="Región",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',
-        template="plotly_white"
+        template="plotly_white",
     )
 
     # Gráfico 2 comparacion de resultados segun zona 
@@ -3087,10 +3756,12 @@ def grafico_resultados_idps22_4 (request):
             marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
         ))
 
-        fig2.update_layout(
+    fig2.update_layout(
         title="Comparación de Indicadores por Zona",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3111,10 +3782,12 @@ def grafico_resultados_idps22_4 (request):
             textposition='inside'
         ))
 
-        fig3.update_layout(
+    fig3.update_layout(
         title="Comparación de Indicadores por Dependencia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3135,15 +3808,17 @@ def grafico_resultados_idps22_4 (request):
             textposition='inside'
         ))
 
-        fig4.update_layout(
+    fig4.update_layout(
         title="Comparación de Indicadores por Provincia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
 
-    grafico_html =fig.to_html()
+    grafico_html =fig.to_html(full_html=False, include_plotlyjs='cdn', config={'responsive': True})
     grafico_zona =fig2.to_html()
     grafico_dependencia =fig3.to_html()
     grafico_provincia =fig4.to_html()
@@ -3176,19 +3851,19 @@ def grafico_resultados_idps22_4 (request):
     v_cramer_pro= v_cramer(tabla_pro)
 
     return render(request, 'educacion/graficos_idps22_4.html', {'grafico_html': grafico_html,
-                                                                'grafico_zona': grafico_zona,
-                                                                'grafico_dependencia':grafico_dependencia,
-                                                                'grafico_provincia':grafico_provincia,
-                                                                'nom_reg_rbd': region_seleccionada,
-                                                                'chi2_zona': round(chi2_zona,2),
-                                                                'chi2_depe':round(chi2_depe,2),
-                                                                'chi2_pro':round(chi2_pro,2),
-                                                                'p_zona':round(p_zona,2),
-                                                                'p_depe':round(p_depe,2),
-                                                                'p_pro':round(p_pro,2),
-                                                                'v_cramer_pro':round(v_cramer_pro,2),
-                                                                'v_cramer_depe':round(v_cramer_depe,2),
-                                                                'v_cramer_zona':round(v_cramer_zona,2)})
+                                                    'grafico_zona': grafico_zona,
+                                                    'grafico_dependencia':grafico_dependencia,
+                                                    'grafico_provincia':grafico_provincia,
+                                                    'nom_reg_rbd': region_seleccionada,
+                                                    'chi2_zona': round(chi2_zona,2),
+                                                    'chi2_depe':round(chi2_depe,2),
+                                                    'chi2_pro':round(chi2_pro,2),
+                                                    'p_zona':round(p_zona,2),
+                                                    'p_depe':round(p_depe,2),
+                                                    'p_pro':round(p_pro,2),
+                                                    'v_cramer_pro':round(v_cramer_pro,2),
+                                                    'v_cramer_depe':round(v_cramer_depe,2),
+                                                    'v_cramer_zona':round(v_cramer_zona,2)})
                 
 def grafico_resultados_idps22_2(request):
 
@@ -3280,6 +3955,8 @@ def grafico_resultados_idps22_2(request):
         title="Promedio por Región según Tipo de Indicador",
         xaxis_title="Región",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',
         template="plotly_white"
     )
@@ -3301,10 +3978,12 @@ def grafico_resultados_idps22_2(request):
             marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
         ))
 
-        fig2.update_layout(
+    fig2.update_layout(
         title="Comparación de Indicadores por Zona",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3325,10 +4004,12 @@ def grafico_resultados_idps22_2(request):
             textposition='inside'
         ))
 
-        fig3.update_layout(
+    fig3.update_layout(
         title="Comparación de Indicadores por Dependencia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3350,10 +4031,12 @@ def grafico_resultados_idps22_2(request):
             textposition='inside'
         ))
 
-        fig4.update_layout(
+    fig4.update_layout(
         title="Comparación de Indicadores por Provincia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3475,6 +4158,8 @@ def grafico_resultados_idps23_4 (request):
         title="Promedio por Región según Tipo de Indicador",
         xaxis_title="Región",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',
         template="plotly_white"
     )
@@ -3497,10 +4182,12 @@ def grafico_resultados_idps23_4 (request):
             marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
         ))
 
-        fig2.update_layout(
+    fig2.update_layout(
         title="Comparación de Indicadores por Zona",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group', 
         template="plotly_white"
     )
@@ -3521,10 +4208,12 @@ def grafico_resultados_idps23_4 (request):
             textposition='inside'
         ))
 
-        fig3.update_layout(
+    fig3.update_layout(
         title="Comparación de Indicadores por Dependencia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3545,10 +4234,12 @@ def grafico_resultados_idps23_4 (request):
             textposition='inside'
         ))
 
-        fig4.update_layout(
+    fig4.update_layout(
         title="Comparación de Indicadores por Provincia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3692,6 +4383,8 @@ def grafico_resultados_idps23_2(request):
         title="Promedio por Región según Tipo de Indicador",
         xaxis_title="Región",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',
         template="plotly_white"
     )
@@ -3713,10 +4406,12 @@ def grafico_resultados_idps23_2(request):
             marker_color='#EF553B' if ruralidad == 1 else '#636EFA'
         ))
 
-        fig2.update_layout(
+    fig2.update_layout(
         title="Comparación de Indicadores por Zona",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group', 
         template="plotly_white"
     )
@@ -3737,10 +4432,12 @@ def grafico_resultados_idps23_2(request):
             textposition='inside'
         ))
 
-        fig3.update_layout(
+    fig3.update_layout(
         title="Comparación de Indicadores por Dependencia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3761,10 +4458,12 @@ def grafico_resultados_idps23_2(request):
             textposition='inside'
         ))
 
-        fig4.update_layout(
+    fig4.update_layout(
         title="Comparación de Indicadores por Provincia",
         xaxis_title="Indicador",
         yaxis_title="Promedio",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
         barmode='group',  
         template="plotly_white"
     )
@@ -3809,42 +4508,42 @@ def dotacion_docente_20 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "METROPOLITANA DE SANTIAGO")
 
     # Filtrar los datos
-    datos = dotacion_docente.objects.filter(AGNO=2020)
+    datos = dotacion_docente.objects.filter(AGNO=2020).values('AGNO','NOM_REG_RBD_A', 'COD_DEPE2', 'RURAL_RBD', 'DC_A', 'HH_A', 'DC_TOT',
+                         'HH_TOT')
 
     
     # Filtrar por región 
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
 
-    datos = datos.values('AGNO','NOM_REG_RBD_A', 'COD_DEPE2', 'RURAL_RBD', 'DC_A', 'HH_A', 'DC_TOT',
-                         'HH_TOT')
     df = pd.DataFrame(datos)
-    print(df.columns)
-
 
 # Grafico dependencia y horas por docente
   
-    df1 = df[df['DC_A'] > 0]  # Filtrar donde haya docentes para evitar división por cero
-    df1['Prom_Horas_Por_Docente'] = df1['HH_A'] / df1['DC_A']
-
-    print("Primeras filas del DataFrame:\n", df1.head())
+    df = df[df["DC_A"] > 0]  # Filtrar donde haya docentes para evitar división por cero
+    df['Prom_Horas_Por_Docente'] = df['HH_A'] / df['DC_A']
 
     # Agrupar por COD_DEPE2 y calcular el promedio
-    df_grouped = df1.groupby('COD_DEPE2')['Prom_Horas_Por_Docente'].mean()
+    df_grouped = df.groupby('COD_DEPE2')['Prom_Horas_Por_Docente'].mean().reset_index()
+    df_grouped.columns = ['Dependencia','Promedio horas']
 
     fig = go.Figure()
 
-    fig.add_bar(
-        x=df_grouped['COD_DEPE2'],
-        y=df_grouped['Prom_Horas_Por_Docente'],
-        marker_color='blue',
-        name='Horas promedio'
-    )
+    for dependencia in df_grouped['Dependencia'].unique():
+        df_filtrado = df_grouped[df_grouped['Dependencia']== dependencia]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Dependencia'],
+            y=df_filtrado['Promedio horas'],
+            text= df_filtrado['Promedio horas'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'auto',
+            name= dependencia
+        ))
 
     fig.update_layout(
         title="Promedio de Horas por Docente según Dependencia",
         xaxis_title="Código Dependencia",
-        yaxis_title="Promedio de Horas",
+        title_font= dict(),
+        title_x= 0.5,
         template="plotly_white"
     )
 
@@ -4027,3 +4726,520 @@ def dotacion_docente_24 (request):
     grafico_depe = fig.to_html()
 
     return render (request, 'educacion/grafico_docente_24',{'grafico_depe':grafico_depe})
+
+
+############################  RENDIMIENTO ACADEMICO  #############################################
+
+
+def grafico_rendimiento_20 (request):
+
+    region_seleccionada = request.GET.get("COD_REG_RBD", "13")
+
+    datos = rendimiento_academico.objects.filter(AGNO = 2020)
+
+    if region_seleccionada:
+        datos = datos.filter(COD_REG_RBD=region_seleccionada)
+
+    datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
+                         "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
+
+    df = pd.DataFrame(datos)
+
+
+## Grafico promedio por genero
+    
+    prom_por_genero = df.groupby("GEN_ALU")["PROM_GRAL"].mean().reset_index()
+
+    fig = go.Figure()
+
+
+## Grafico asistencia por genero
+
+    asis_por_genero = df.groupby("GEN_ALU")["ASISTENCIA"].mean().reset_index()
+    asis_por_genero.columns = ["Género", "Asistencia"]
+
+    fig2 = go.Figure()
+
+## Grafico promedio por rural
+
+    prom_por_zona = df.groupby("RURAL_RBD")["PROM_GRAL"].mean().reset_index()
+    prom_por_zona.columns = ["Zona", "Promedio"]
+
+    fig3 = go.Figure()
+
+## Grafico asistencia por rural
+
+    asis_por_zona = df.groupby("RURAL_RBD")["ASISTENCIA"].mean().reset_index()
+    asis_por_zona.columns = ["Zona", "Asistencia"]
+
+    fig4 = go.Figure()
+
+def grafico_rendimiento_21 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+    categorias_zona = {
+        0 : "Urbano",
+        1 : "Rural"
+    }
+
+    region_seleccionada = request.GET.get("COD_REG_RBD", "13")
+
+    datos = rendimiento_academico.objects.filter(AGNO = 2021)
+
+    if region_seleccionada:
+        datos = datos.filter(COD_REG_RBD=region_seleccionada)
+
+    datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
+                         "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
+
+    df = pd.DataFrame(datos)
+
+    df['GEN_ALU']= df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD']= df['RURAL_RBD'].map(categorias_zona)
+
+## Grafico promedio por genero
+    
+    prom_por_genero = df.groupby("GEN_ALU")["PROM_GRAL"].mean().reset_index()
+    prom_por_genero.columns = ['Género', 'Promedio']
+    
+    fig = go.Figure()
+
+    for genero in prom_por_genero['Género'].unique():
+        df_filtrado = prom_por_genero[prom_por_genero['Género']==genero]
+        fig.add_trace(go.Bar(
+            x=df_filtrado['Género'],
+            y=df_filtrado['Promedio'],
+            text= df_filtrado['Promedio'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= genero
+        ))
+
+    fig.update_layout(
+        title= 'Promedio Académico por Género',
+        xaxis_title= 'Género',
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis= dict(title='Promedio', range=[0,7]),
+        bargap= 0.2,
+        bargroupgap= 0.1,
+        autosize= True,
+        height= 400,
+        template= 'simple_white'
+    )
+## Grafico asistencia por genero
+
+    asis_por_genero = df.groupby("GEN_ALU")["ASISTENCIA"].mean().reset_index()
+    asis_por_genero.columns = ["Género", "Asistencia"]
+
+    fig2 = go.Figure()
+
+    for genero in asis_por_genero['Género'].unique():
+        df_filtrado = asis_por_genero[asis_por_genero['Género']==genero]
+        fig2.add_trace(go.Bar(
+            x= df_filtrado['Género'],
+            y= df_filtrado['Asistencia'],
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= genero
+        ))
+
+    fig2.update_layout(
+        title= 'Asistencia por Género',
+        xaxis_title= 'Género',
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis= dict(title= "Promedio Asistencia", range=[0,100]),
+        bargap= 0.2,
+        bargroupgap= 0.1,
+        autosize= True,
+        height= 400,
+        template= 'simple_white'
+    )
+
+## Grafico promedio por rural
+
+    prom_por_zona = df.groupby("RURAL_RBD")["PROM_GRAL"].mean().reset_index()
+    prom_por_zona.columns = ["Zona", "Promedio"]
+
+    fig3 = go.Figure()
+
+    for zona in prom_por_zona['Zona'].unique():
+        df_filtrado= prom_por_zona[prom_por_zona['Zona']== zona]
+        fig3.add_trace(go.Bar(
+            x= df_filtrado['Zona'],
+            y= df_filtrado['Promedio'],
+            text= df_filtrado['Promedio'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= zona
+        ))
+
+    fig3.update_layout(
+        title= 'Promedio por Zona',
+        xaxis_title= 'Zona',
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis= dict(title='Promedio', range=[0,7]),
+        bargap= 0.2,
+        bargroupgap= 0.1,
+        autosize= True,
+        height= 400,
+        template= 'simple_white'
+    )
+
+## Grafico asistencia por rural
+
+    asis_por_zona = df.groupby("RURAL_RBD")["ASISTENCIA"].mean().reset_index()
+    asis_por_zona.columns = ["Zona", "Asistencia"]
+
+    fig4 = go.Figure()
+
+    for zona in asis_por_zona['Zona'].unique():
+        df_filtrado = asis_por_zona[asis_por_zona['Zona']== zona]
+        fig4.add_trace(go.Bar(
+            x= df_filtrado['Zona'],
+            y= df_filtrado['Asistencia'],
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= zona
+        ))
+
+    fig4.update_layout(
+        title='Promedio Asistencia por Zona',
+        xaxis_title= 'Zona',
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis= dict(title= 'Promedio Asistencia', tickformat='.2f', range=[0,100]),
+        bargap= 0.2,
+        bargroupgap= 0.1,
+        autosize= True,
+        height= 400,
+        template= 'simple_white'
+    )
+
+    grafico_prom_gen = fig.to_html()
+    grafico_asis_gen = fig2.to_html()
+    grafico_prom_ru = fig3.to_html()
+    grafico_asis_ru = fig4.to_html()
+
+    return render (request, 'educacion/grafico_rendimiento_21.html', {'region': region_seleccionada,
+                                                                    'grafico_prom_gen': grafico_prom_gen,
+                                                                    'grafico_asis_gen': grafico_asis_gen,
+                                                                    'grafico_prom_ru': grafico_prom_ru,
+                                                                    'grafico_asis_ru': grafico_asis_ru})
+
+def grafico_rendimiento_22 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+    categorias_zona = {
+        0 : "Urbano",
+        1 : "Rural"
+    }
+
+    region_seleccionada = request.GET.get("COD_REG_RBD", "13")
+
+    datos = rendimiento_academico.objects.filter(AGNO=2022)
+
+    if region_seleccionada:
+        datos = datos.filter(COD_REG_RBD = region_seleccionada)
+
+    datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
+                         "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
+
+    df = pd.DataFrame(datos)
+
+    df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_zona)
+
+## Grafico promedio por genero
+
+    prom_por_genero = df.groupby("GEN_ALU")["PROM_GRAL"].mean().reset_index()
+    prom_por_genero.columns = ["Género", "Promedio"]
+
+    fig = go.Figure()
+
+    for genero in prom_por_genero["Género"].unique():
+        df_filtrado = prom_por_genero[prom_por_genero['Género']== genero]
+        fig.add_trace(go.Bar(
+            x= df_filtrado["Género"],
+            y= df_filtrado["Promedio"],
+            text= df_filtrado["Promedio"].apply(lambda x: f"{x: .2f}"),
+            textposition= "outside",
+            name= genero
+        ))
+    
+    fig.update_layout(
+        title="Promedio Académico por Género", 
+        xaxis_title="Género",
+        title_font= dict(weight="bold"),
+        title_x=0.5, 
+        yaxis=dict(title="Promedio", range=[0, 7]),
+        bargap=0.2,
+        bargroupgap=0.1,
+        template="simple_white",
+        autosize=True,
+        height=400
+    )
+
+## Grafico asistencia por genero
+
+    asis_por_genero = df.groupby("GEN_ALU")["ASISTENCIA"].mean().reset_index()
+    asis_por_genero.columns = ["Género", "Asistencia"]
+
+    fig2 = go.Figure()
+
+    for genero in asis_por_genero["Género"].unique():
+        df_filtrado = asis_por_genero[asis_por_genero["Género"]== genero]
+        fig2.add_trace(go.Bar(
+            x= df_filtrado["Género"],
+            y= df_filtrado["Asistencia"],
+            text = df_filtrado["Asistencia"].apply(lambda x: f"{x: .2f}"),
+            textposition= "outside",
+            name = genero
+        ))
+
+    fig2.update_layout(
+            title="Asistencia por Género",
+            xaxis_title="Zona",
+            title_font= dict(weight="bold"),
+            title_x=0.5,
+            yaxis=dict(title="Promedio Asistencia", range=[0, 100]),
+            bargap=0.2,
+            bargroupgap=0.1,
+            template="simple_white",
+            autosize=True,
+            height=400
+        )
+
+## Grafico promedio por rural
+
+    prom_por_zona = df.groupby("RURAL_RBD")["PROM_GRAL"].mean().reset_index()
+    prom_por_zona.columns = ["Zona", "Promedio"]
+
+    fig3 = go.Figure()
+
+    for zona in prom_por_zona["Zona"].unique():
+        df_filtrado = prom_por_zona[prom_por_zona["Zona"]== zona]
+        fig3.add_trace(go.Bar(
+            x= df_filtrado["Zona"],
+            y= df_filtrado["Promedio"],
+            text= df_filtrado["Promedio"].apply(lambda x: f"{x: .2f}"), 
+            textposition= "outside",
+            name = zona
+        ))
+
+        fig3.update_layout(
+            title="Promedio Académico por Zona",
+            xaxis_title="Zona",
+            title_font= dict(weight="bold"),
+            title_x=0.5,
+            yaxis=dict(title="Promedio", range=[0, 7]),
+            bargap=0.2,
+            bargroupgap=0.1,
+            template="simple_white",
+            autosize=True,
+            height=400
+        )
+
+## Grafico asistencia por rural
+
+    asis_por_zona = df.groupby("RURAL_RBD")["ASISTENCIA"].mean().reset_index()
+    asis_por_zona.columns = ["Zona", "Asistencia"]
+
+    fig4 = go.Figure()
+
+    for zona in asis_por_zona['Zona'].unique():
+        df_filtrado = asis_por_zona[asis_por_zona['Zona']==zona]
+        fig4.add_trace(go.Bar(
+            x= df_filtrado['Zona'],
+            y= df_filtrado['Asistencia'],
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= zona 
+        ))
+    
+    fig4.update_layout(
+            title="Asistencia por Zona",
+            xaxis_title="Zona",
+            title_font= dict(weight="bold"),
+            title_x=0.5,
+            yaxis=dict(title="Promedio Asistencia", range=[0, 100]),
+            bargap=0.2,
+            bargroupgap=0.1,
+            template="simple_white",
+            autosize=True,
+            height=400
+        )
+    
+    grafico_prom_gen = fig.to_html()
+    grafico_asis_gen = fig2.to_html()
+    grafico_prom_ru = fig3.to_html()
+    grafico_asis_ru = fig4.to_html()
+
+    return render(request, "educacion/grafico_rendimiento_22.html",{'region': region_seleccionada,
+                                                                    'grafico_prom_gen': grafico_prom_gen,
+                                                                    'grafico_asis_gen': grafico_asis_gen,
+                                                                    'grafico_prom_ru': grafico_prom_ru,
+                                                                    'grafico_asis_ru': grafico_asis_ru})
+
+def grafico_rendimiento_23 (request):
+
+    categorias_genero = {
+        1 : "Masculino",
+        2 : "Femenino"
+    }
+    categorias_zona = {
+        0 : "Urbano",
+        1 : "Rural"
+    }
+
+    region_seleccionada = request.GET.get("COD_REG_RBD", "13")
+
+    datos = rendimiento_academico.objects.filter(AGNO=2023)
+
+    if region_seleccionada:
+        datos = datos.filter(COD_REG_RBD = region_seleccionada)
+
+    datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
+                         "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
+
+    df = pd.DataFrame(datos)
+
+    df["GEN_ALU"] = df["GEN_ALU"].map(categorias_genero)
+    df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_zona)
+
+
+## Grafico promedio por genero
+
+    prom_por_genero = df.groupby("GEN_ALU")["PROM_GRAL"].mean().reset_index()
+    prom_por_genero.columns = ["Género", "Promedio"]
+
+    fig = go.Figure()
+    for genero in prom_por_genero["Género"].unique():
+        df_filtrado = prom_por_genero[prom_por_genero["Género"] == genero]
+        fig.add_trace(go.Bar(
+            x= df_filtrado["Género"], 
+            y=df_filtrado["Promedio"],
+            text=df_filtrado["Promedio"].apply(lambda x: f"{x:.2f}"),
+            textposition='outside', 
+            name= genero
+        )) 
+        
+    fig.update_layout(
+        title="Promedio Académico por Género", 
+        xaxis_title="Género",
+        title_font= dict(weight="bold"),
+        title_x=0.5, 
+        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 7]),
+        bargap=0.2,
+        bargroupgap=0.1,
+        template="simple_white",
+        autosize=True,
+        height=400
+        )
+
+## Grafico asistencia por genero
+
+    asis_por_genero = df.groupby("GEN_ALU")["ASISTENCIA"].mean().reset_index()
+    asis_por_genero.columns = ['Género', 'Asistencia']
+
+    fig2 = go.Figure()
+
+    for genero in asis_por_genero['Género'].unique():
+        df_filtrado = asis_por_genero[asis_por_genero['Género']== genero]
+        fig2.add_trace(go.Bar(
+                    x=df_filtrado["Género"], 
+                    y=df_filtrado["Asistencia"], 
+                    text= df_filtrado["Asistencia"].apply(lambda x: f"{x:.2f}"),
+                    textposition= 'outside',
+                    name=genero,
+        ))
+        
+    fig2.update_layout(
+        title="Asistencia Promedio por Género",
+        xaxis_title="Género",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 100]),
+        bargap=0.2,
+        bargroupgap=0.1,
+        template="simple_white",
+        autosize=True,
+        height=400
+        )
+
+## Grafico promedio por rural
+
+    prom_por_zona = df.groupby("RURAL_RBD")["PROM_GRAL"].mean().reset_index()
+    prom_por_zona.columns = ["Zona", "Promedio"]
+
+    fig3 = go.Figure()
+
+    for zona in prom_por_zona["Zona"].unique():
+        df_filtrado = prom_por_zona[prom_por_zona['Zona'] == zona]
+        fig3.add_trace(go.Bar(
+            x=df_filtrado["Zona"],  # Solo esa zona
+            y=df_filtrado["Promedio"],
+            text=df_filtrado["Promedio"].apply(lambda x: f"{x:.2f}"),
+            textposition='outside',
+            name=zona
+        ))
+
+    fig3.update_layout(
+        title="Promedio Académico por Zona",
+        xaxis_title="Zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 7]),
+        bargap=0.2,
+        bargroupgap=0.1,
+        template="simple_white",
+        autosize=True,
+        height=400
+    )
+
+## Grafico asistencia por rural
+
+    asis_por_zona = df.groupby("RURAL_RBD")["ASISTENCIA"].mean().reset_index()
+    asis_por_zona.columns = ["Zona", "Asistencia"]
+
+    fig4 = go.Figure()
+
+    for zona in asis_por_zona["Zona"].unique():
+        df_filtrado = asis_por_zona[asis_por_zona['Zona']== zona]
+        fig4.add_trace(go.Bar(
+            x=df_filtrado["Zona"], 
+            y=df_filtrado["Asistencia"],
+            text= df_filtrado["Asistencia"].apply(lambda x: f"{x: .2f}"),
+            textposition= "outside", 
+            name= zona 
+        ))
+    
+    fig4.update_layout(
+        title="Promedio Asistencia por Zona",
+        xaxis_title="Zona",
+        title_font= dict(weight="bold"),
+        title_x=0.5,
+        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 100]),
+        bargap=0.2,
+        bargroupgap=0.1,
+        template="simple_white",
+        autosize=True,
+        height=400
+        )
+    
+    grafico_prom_gen = fig.to_html()
+    grafico_asis_gen = fig2.to_html()
+    grafico_prom_ru = fig3.to_html()
+    grafico_asis_ru = fig4.to_html()
+
+    return render (request, 'educacion/grafico_rendimiento_23.html', {"grafico_prom_gen": grafico_prom_gen,
+                                                                      "grafico_asis_gen": grafico_asis_gen,
+                                                                      "grafico_prom_ru": grafico_prom_ru,
+                                                                      "grafico_asis_ru": grafico_asis_ru,
+                                                                      "region": region_seleccionada})

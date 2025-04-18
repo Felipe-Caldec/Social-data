@@ -1,0 +1,108 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load bootstrap5 %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Género</title>
+<style>
+    .custom-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+    /* Asegura que los gráficos sean responsivos */
+    .grafico-container img, .grafico-container svg {
+        max-width: 100%;
+        height: auto;
+    }
+    /* Alineación del contenido interno a la derecha style="max-width: 100%; height: auto;" */
+    .align-end {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .plotly-graph-div {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
+</head>
+<body class="background-container"> 
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="custom-card">
+                    <h2 style="text-align: center;">Gráficos Rendimiento</h2>
+                    <h2 style="text-align: center;">Académico y Asistencia 2022</h2>
+
+                    <label for="region" class="pt-2">Selecciona una región:</label>
+                    <select id="region" name="COD_REG_RBD" onchange="filtrarPorRegion()">
+                        <option value="13" {% if COD_REG_RBD == "13" %}selected{% endif %} >Región Metropolitana</option>
+                        <option value="1" {% if COD_REG_RBD == "1" %} selected {% endif %}>Región de Tarapacá</option>
+                        <option value="2"{% if COD_REG_RBD == "2" %} selected {% endif %}>Región de Antofagasta </option>
+                        <option value="3"{% if COD_REG_RBD == "3" %} selected {% endif %}>Región de Atacama </option>
+                        <option value="4"{% if COD_REG_RBD == "4" %} selected {% endif %}>Región de Coquimbo</option>
+                        <option value="5"{% if COD_REG_RBD == "5" %} selected {% endif %}>Región de Valparaíso</option>
+                        <option value="6"{% if COD_REG_RBD == "6" %} selected {% endif %}>Región del Libertador 
+                            Gral. Bernardo OHiggins</option>
+                        <option value="7"{% if COD_REG_RBD == "7" %} selected {% endif %}>Región del Maule </option>
+                        <option value="8"{% if COD_REG_RBD == "8" %} selected {% endif %}>Región del Biobío</option>
+                        <option value="9"{% if COD_REG_RBD == "9" %} selected {% endif %}>Región de la Araucanía</option>
+                        <option value="10"{% if COD_REG_RBD == "10" %} selected {% endif %}>Región de Los Lagos</option>
+                        <option value="11"{% if COD_REG_RBD == "11" %} selected {% endif %}>Región de Aysén del Gral. 
+                            Carlos Ibáñez del Campo</option>
+                        <option value="12"{% if COD_REG_RBD == "12" %} selected {% endif %}>Región de Magallanes y 
+                            de la Antártica Chilena </option>
+                        <option value="14"{% if COD_REG_RBD == "14" %} selected {% endif %}>Región de Los Ríos</option>
+                        <option value="15"{% if COD_REG_RBD == "15" %} selected {% endif %}>Región de Arica y Parinacota</option>
+                        <option value="16"{% if COD_REG_RBD == "16" %} selected {% endif %}>Región de Ñuble</option>
+                    </select>
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_prom_gen|safe }}
+                </div>
+                <div>
+                    <p> Se excluye del gráfico los/as alumnos/as que reportaron "Sin información" ya que
+                        dificultan una mejor observación de la información y sólo representa 7 casos
+                    </p>
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_prom_ru|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_asis_gen|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_asis_ru|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    function filtrarPorRegion() {
+        var region = document.getElementById("region").value;
+        window.location.href = "?COD_REG_RBD=" + region;
+    }
+
+    // Mantener seleccionada la región actual
+    document.getElementById("region").value = "{{ region }}";
+</script>
+
+</body>
+</html>
+{% endblock %}

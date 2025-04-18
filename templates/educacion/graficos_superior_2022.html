@@ -1,0 +1,93 @@
+{% extends 'base.html'%}
+{% block content %}
+{% load bootstrap5 %}
+{% load static %}
+
+<style>
+
+    .custom-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+    /* Asegura que los gráficos sean responsivos */
+    .grafico-container img, .grafico-container svg {
+        max-width: 100%;
+        height: auto;
+    }
+    /* Alineación del contenido interno a la derecha style="max-width: 100%; height: auto;" */
+    .align-end {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .plotly-graph-div {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    }
+</style>
+
+<link rel="stylesheet" href="{% static 'css/style_graficos.css'%}">
+
+<body class="background-container">
+<div class="container py-5">
+    <div class="row justify-content-end">
+        <div class="col-lg-8"> 
+            <div class="custom-card">
+                <h2 class="text-center mb-4" >Graficos de matrículas</h2>
+                <h3 class="text-center mb-4" >Educación Superior 2022</h3>
+                <label for="region_sede" class="form-label">Selecciona una región:</label>
+                <select id="region_sede" class="form-select" name="region_sede" onchange="filtrarPorRegion()">
+                    <option value="Metropolitana" {% if region_sede == "Metropolitana" %}selected{% endif %} >Región Metropolitana</option>
+                    <option value="Tarapacá" {% if region_sede == "Tarapacá" %} selected {% endif %}>Región de Tarapacá</option>
+                    <option value="Antofagasta"{% if region_sede == "Antofagasta" %} selected {% endif %}>Región de Antofagasta </option>
+                    <option value="Atacama"{% if region_sede == "Atacama" %} selected {% endif %}>Región de Atacama </option>
+                    <option value="Coquimbo"{% if region_sede == "Coquimbo" %} selected {% endif %}>Región de Coquimbo</option>
+                    <option value="Valparaíso"{% if region_sede == "Valparaíso" %} selected {% endif %}>Región de Valparaíso</option>
+                    <option value="Lib. Gral B. O'Higgins"{% if region_sede == "Lib. Gral B. O'Higgins" %} selected {% endif %}>Región del Libertador 
+                        Gral. Bernardo OHiggins</option>
+                    <option value="Maule"{% if region_sede == "Maule" %} selected {% endif %}>Región del Maule </option>
+                    <option value="Biobío"{% if region_sede == "Biobío" %} selected {% endif %}>Región del Biobío</option>
+                    <option value="La Araucanía"{% if region_sede == "La Araucanía" %} selected {% endif %}>Región de la Araucanía</option>
+                    <option value="Los Lagos"{% if region_sede == "Los Lagos" %} selected {% endif %}>Región de Los Lagos</option>
+                    <option value="Aysén"{% if region_sede == "Aysén" %} selected {% endif %}>Región de Aysén del Gral. 
+                        Carlos Ibáñez del Campo</option>
+                    <option value="Magallanes"{% if region_sede == "Magallanes" %} selected {% endif %}>Región de Magallanes y 
+                        de la Antártica Chilena </option>
+                    <option value="Los Ríos"{% if region_sede == "Los Ríos" %} selected {% endif %}>Región de Los Ríos</option>
+                    <option value="Arica y Parinacota"{% if region_sede == "Arica y Parinacota" %} selected {% endif %}>Región de Arica y Parinacota</option>
+                    <option value="Ñuble"{% if region_sede == "Ñuble" %} selected {% endif %}>Región de Ñuble</option>
+                </select>
+            </div>
+
+            <div class="custom-card grafico-container align-end"  >
+                {{ grafico_html|safe }}
+            </div>
+
+            <div class="custom-card grafico-container align-end">
+                {{ grafico_tipo_html|safe }}
+            </div>
+
+            <div class="custom-card grafico-container align-end">
+                {{ grafico_area_html|safe }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function filtrarPorRegion() {
+        const region = document.getElementById("region_sede").value;
+        window.location.href = `?region_sede=${region}`;
+    }
+    document.getElementById("region_sede").addEventListener("change", filtrarPorRegion);
+</script>
+</body>
+
+{% endblock %}

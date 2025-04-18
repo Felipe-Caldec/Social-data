@@ -1,7 +1,7 @@
 import pandas as pd
 from decimal import Decimal, InvalidOperation
 
-df = pd.read_csv(r"C:\Users\olgac\OneDrive\Desktop\base_rendimiento_2020.csv",sep=";", quotechar='"',encoding="utf-8")
+df = pd.read_csv(r"C:\Users\olgac\OneDrive\Desktop\base_rendimiento_2023l.csv",sep=",", quotechar='"')
 
 
 # 2️⃣ Eliminar columnas que no están en 'columnas_modelo'
@@ -21,7 +21,7 @@ filas_guardadas_total = 0
 print(f"Total de filas en el dataset: {len(df)}")  # Verificar la cantidad total de filas antes de guardar
 
 for i, start_row in enumerate(range(0, len(df), max_rows)):
-    archivo_salida = f"C:\\Users\\olgac\\OneDrive\\Desktop\\base_rendimiento_2020_parte_{i+1}.csv"
+    archivo_salida = f"C:\\Users\\olgac\\OneDrive\\Desktop\\base_rendimiento_2023_parte_{i+1}.csv"
     final_row = min(start_row + max_rows, len(df))  # Asegurarse de no exceder las filas disponibles
     
     # Verificar los rangos de las filas seleccionadas

@@ -3,103 +3,109 @@
 {% load bootstrap5 %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico de Género</title>
 <style>
-.grafico-container, .filtro-container, .resultados {
-    display: flex;
-    flex-direction: column;
-    align-items: center;  
-    justify-content: center; 
-    text-align: center; 
-    width: 100%;
-    padding-top: 2rem;
-}
 
-.resultados {
-    width: 80%;  
-    max-width: 900px;  
-    margin: 0 auto;  
-}
+    .custom-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+    /* Asegura que los gráficos sean responsivos */
+    .grafico-container img, .grafico-container svg {
+        max-width: 100%;
+        height: auto;
+    }
+    /* Alineación del contenido interno a la derecha style="max-width: 100%; height: auto;" */
+    .align-center {
+        display: flex;
+        flex-direction: column;
+        align-items:center;
+    }
+    
+    .plotly-graph-div {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
 </style>
 <link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
-</head>
-<body> 
-    <!-- GRAFICO GENERO POR ZONA-->
-    <div class="filtro-container">
-        <h2 style="text-align: center;">Gráficos de matrículas Párvulo </h2>
-        <h2 style="text-align: center;">por género 2024</h2>
 
-        <label for="region" class="pt-2">Selecciona una región:</label>
-        <select id="region" name="nom_reg_a_estab" onchange="filtrarPorRegion()">
-            <option value="RM" {% if region == "RM" %}selected{% endif %} >Región Metropolitana</option>
-            <option value="TPCA" {% if region == "TPCA" %} selected {% endif %}>Región de Tarapacá</option>
-            <option value="ANTOF"{% if region == "ANTOF" %} selected {% endif %}>Región de Antofagasta </option>
-            <option value="ATCMA"{% if region == "ATCM" %} selected {% endif %}>Región de Atacama </option>
-            <option value="COQ"{% if region == "COQ" %} selected {% endif %}>Región de Coquimbo</option>
-            <option value="VALPO"{% if region == "VALPO" %} selected {% endif %}>Región de Valparaíso</option>
-            <option value="LGBO"{% if region == "LGBO" %} selected {% endif %}>Región del Libertador 
-                Gral. Bernardo OHiggins</option>
-            <option value="MAULE"{% if region == "MAULE" %} selected {% endif %}>Región del Maule </option>
-            <option value="BBIO"{% if region == "BBIO" %} selected {% endif %}>Región del Biobío</option>
-            <option value="ARAUC"{% if region == "ARAUC" %} selected {% endif %}>Región de la Araucanía</option>
-            <option value="LAGOS"{% if region == "LAGOS" %} selected {% endif %}>Región de Los Lagos</option>
-            <option value="AYSEN"{% if region == "AYSEN" %} selected {% endif %}>Región de Aysén del Gral. 
-                Carlos Ibáñez del Campo</option>
-            <option value="MAG"{% if region == "MAG" %} selected {% endif %}>Región de Magallanes y 
-                de la Antártica Chilena </option>
-            <option value="RIOS"{% if region == "RIOS" %} selected {% endif %}>Región de Los Ríos</option>
-            <option value="AYP"{% if region == "AYP" %} selected {% endif %}>Región de Arica y Parinacota</option>
-            <option value="NUBLE"{% if region == "NUBLE" %} selected {% endif %}>Región de Ñuble</option>
-        </select>
+<body class="background-container"> 
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="custom-card">
+                    <h2 style="text-align: center;">Gráficos de matrículas</h2>
+                    <h2 style="text-align: center;">Educación Parvularia 2024</h2>
+
+                    <label for="region" class="pt-2">Selecciona una región:</label>
+                    <select id="region" name="nom_reg_a_estab" onchange="filtrarPorRegion()">
+                        <option value="RM" {% if region == "RM" %}selected{% endif %} >Región Metropolitana</option>
+                        <option value="TPCA" {% if region == "TPCA" %} selected {% endif %}>Región de Tarapacá</option>
+                        <option value="ANTOF"{% if region == "ANTOF" %} selected {% endif %}>Región de Antofagasta </option>
+                        <option value="ATCMA"{% if region == "ATCM" %} selected {% endif %}>Región de Atacama </option>
+                        <option value="COQ"{% if region == "COQ" %} selected {% endif %}>Región de Coquimbo</option>
+                        <option value="VALPO"{% if region == "VALPO" %} selected {% endif %}>Región de Valparaíso</option>
+                        <option value="LGBO"{% if region == "LGBO" %} selected {% endif %}>Región del Libertador 
+                            Gral. Bernardo OHiggins</option>
+                        <option value="MAULE"{% if region == "MAULE" %} selected {% endif %}>Región del Maule </option>
+                        <option value="BBIO"{% if region == "BBIO" %} selected {% endif %}>Región del Biobío</option>
+                        <option value="ARAUC"{% if region == "ARAUC" %} selected {% endif %}>Región de la Araucanía</option>
+                        <option value="LAGOS"{% if region == "LAGOS" %} selected {% endif %}>Región de Los Lagos</option>
+                        <option value="AYSEN"{% if region == "AYSEN" %} selected {% endif %}>Región de Aysén del Gral. 
+                            Carlos Ibáñez del Campo</option>
+                        <option value="MAG"{% if region == "MAG" %} selected {% endif %}>Región de Magallanes y 
+                            de la Antártica Chilena </option>
+                        <option value="RIOS"{% if region == "RIOS" %} selected {% endif %}>Región de Los Ríos</option>
+                        <option value="AYP"{% if region == "AYP" %} selected {% endif %}>Región de Arica y Parinacota</option>
+                        <option value="NUBLE"{% if region == "NUBLE" %} selected {% endif %}>Región de Ñuble</option>
+                    </select>
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_html|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                {{ grafico_dependencia_html|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                    {{ grafico_tipo_html|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">
+                    <p> El valor de Chi-cuadrado es {{ chi2_tipo }} lo que da un valor de significancia de {{p_tipo}}, pudiendo concluir que 
+                    {% if p_tipo < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
+                    {% else %}<strong>Las diferencias no son significativas.</strong></p>
+                    {% endif %}
+                    <p> V de Cramer es otro estadístico que permite medir la fuerza de la reclación entre 2 variables 
+                        cualitativas, en este caso ese valor es de {{v_cramer_tipo}}, lo que indica que la relación entre ambas 
+                        variables es {% if v_cramer_tipo > 0.6 %} <strong>fuerte</strong>{% elif v_cramer_tipo <= 0.6 and v_cramer_tipo > 0.2 %}
+                        <strong>media</strong> {% else %} <strong> débil</strong>{% endif %}</p>
+                </div>
+
+                <div class="custom-card grafico-container align-center">    
+                    {{ grafico_nivel_html|safe }}
+                </div>
+
+                <div class="custom-card grafico-container align-center">
+                    <p> El valor de Chi-cuadrado es {{ chi2_nivel }} lo que da un valor de significancia de {{p_nivel}}, pudiendo concluir que 
+                    {% if p_nivel < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
+                    {% else %}<strong>Las diferencias no son significativas.</strong></p>
+                    {% endif %} 
+                    <p> V de Cramer es otro estadístico que permite medir la fuerza de la reclación entre 2 variables 
+                        cualitativas, en este caso ese valor es de {{v_cramer_nivel}}, lo que indica que la relación entre ambas 
+                        variables es {% if v_cramer_nivel > 0.6 %} <strong>fuerte</strong>{% elif v_cramer_nivel <= 0.6 and v_cramer_nivel > 0.2 %}
+                        <strong>media</strong> {% else %} <strong> débil</strong>{% endif %}</p>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="grafico-container">    
-    {{ grafico_html|safe }}
-    </div>
-
-<!-- GRAFICO GENERO SEGUN DEPENDENCIA -->
-
-    <div class="grafico-container">    
-    {{ grafico_dependencia_html|safe }}
-    </div>
-
-<!-- GRAFICO GENERO SEGUN TIPO -->
-
-    <div class="grafico-container">    
-        {{ grafico_tipo_html|safe }}
-    </div>
-    <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_tipo }} lo que da un valor de significancia de {{p_tipo}}, pudiendo concluir que 
-        {% if p_tipo < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %}
-        <p> V de Cramer es otro estadístico que permite medir la fuerza de la reclación entre 2 variables 
-            cualitativas, en este caso ese valor es de {{v_cramer_tipo}}, lo que indica que la relación entre ambas 
-            variables es {% if v_cramer_tipo > 0.6 %} <strong>fuerte</strong>{% elif v_cramer_tipo <= 0.6 and v_cramer_tipo > 0.2 %}
-            <strong>media</strong> {% else %} <strong> débil</strong>{% endif %}</p>
-    </div>
-
-    <div class="grafico-container">    
-        {{ grafico_nivel_html|safe }}
-    </div>
-
-    <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_nivel }} lo que da un valor de significancia de {{p_nivel}}, pudiendo concluir que 
-        {% if p_nivel < 0.05 %}<strong>Las diferencias son estadísticamente significativas</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %} 
-        <p> V de Cramer es otro estadístico que permite medir la fuerza de la reclación entre 2 variables 
-            cualitativas, en este caso ese valor es de {{v_cramer_nivel}}, lo que indica que la relación entre ambas 
-            variables es {% if v_cramer_nivel > 0.6 %} <strong>fuerte</strong>{% elif v_cramer_nivel <= 0.6 and v_cramer_nivel > 0.2 %}
-            <strong>media</strong> {% else %} <strong> débil</strong>{% endif %}</p>
-        
-    </div>
-
+</div>
 <script>
     function filtrarPorRegion() {
         var region = document.getElementById("region").value;

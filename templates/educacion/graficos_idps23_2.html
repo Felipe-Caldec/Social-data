@@ -1,112 +1,118 @@
 {% extends 'base.html'%}
 {% block content %}
 {% load bootstrap5 %}
+{% load static %}
 
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico de Género</title>
 <style>
-.grafico-container, .filtro-container, .resultados {
-    display: flex;
-    flex-direction: column;
-    align-items: center;  
-    justify-content: center; 
-    text-align: center; 
-    width: 100%;
-    padding-top: 2rem;
-}
 
-.resultados {
-    width: 80%;  
-    max-width: 900px;  
-    margin: 0 auto;  
-}
+    .custom-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+    /* Asegura que los gráficos sean responsivos */
+    .grafico-container img, .grafico-container svg {
+        max-width: 100%;
+        height: auto;
+    }
+    /* Alineación del contenido interno a la derecha style="max-width: 100%; height: auto;" */
+    .align-end {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .plotly-graph-div {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    }
 </style>
-<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
-</head>
-<body> 
-    <!-- GRAFICO GENERO POR ZONA-->
-    <div class="filtro-container">
-        <h2 style="text-align: center;">Resultados Índice de Desarrollo Personal y Social</h2>
-        <h2 style="text-align: center;">2° Medio 2022</h2>
 
-        <label for="nom_reg_rbd" class="pt-2">Selecciona una región:</label>
-        <select id="nom_reg_rbd" name="nom_reg_rbd" onchange="filtrarPorRegion()">
-            <option value="METROPOLITANA DE SANTIAGO" {% if nom_reg_rbd == "METROPOLITANA DE SANTIAGO" %}selected{% endif %} >Región Metropolitana</option>
-            <option value="DE TARAPACÁ" {% if nom_reg_rbd == "DE TARAPACÁ" %} selected {% endif %}>Región de Tarapacá</option>
-            <option value="DE ANTOFAGASTA"{% if nom_reg_rbd == "DE ANTOFAGASTA" %} selected {% endif %}>Región de Antofagasta </option>
-            <option value="DE ATACAMA"{% if nom_reg_rbd == "DE ATACAMA" %} selected {% endif %}>Región de Atacama </option>
-            <option value="DE COQUIMBO"{% if nom_reg_rbd == "DE COQUIMBO" %} selected {% endif %}>Región de Coquimbo</option>
-            <option value="DE VALPARAÍSO"{% if nom_reg_rbd == "DE VALPARAÍSO" %} selected {% endif %}>Región de Valparaíso</option>
-            <option value="DEL LIBERTADOR BERNARDO O"{% if nom_reg_rbd == "DEL LIBERTADOR BERNARDO O" %} selected {% endif %}>Región del Libertador 
-                Gral. Bernardo OHiggins</option>
-            <option value="DEL MAULE"{% if nom_reg_rbd == "DEL MAULE" %} selected {% endif %}>Región del Maule </option>
-            <option value="DEL BIOBÍO"{% if nom_reg_rbd == "DEL BIOBÍO" %} selected {% endif %}>Región del Biobío</option>
-            <option value="DE LA ARAUCANÍA"{% if nom_reg_rbd == "DE LA ARAUCANÍA" %} selected {% endif %}>Región de la Araucanía</option>
-            <option value="DE LOS LAGOS"{% if nom_reg_rbd == "DE LOS LAGOS" %} selected {% endif %}>Región de Los Lagos</option>
-            <option value="DE AYSÉN DEL GENERAL CARL"{% if nom_reg_rbd == "DE AYSÉN DEL GENERAL CARL" %} selected {% endif %}>Región de Aysén del Gral. 
-                Carlos Ibáñez del Campo</option>
-            <option value="DE MAGALLANES Y DE LA ANT"{% if nom_reg_rbd == "DE MAGALLANES Y DE LA ANT" %} selected {% endif %}>Región de Magallanes y 
-                de la Antártica Chilena </option>
-            <option value="DE LOS RÍOS"{% if nom_reg_rbd == "DE LOS RÍOS" %} selected {% endif %}>Región de Los Ríos</option>
-            <option value="DE ARICA Y PARINACOTA"{% if nom_reg_rbd == "DE ARICA Y PARINACOTA" %} selected {% endif %}>Región de Arica y Parinacota</option>
-            <option value="DE ÑUBLE"{% if nom_reg_rbd == "DE ÑUBLE" %} selected {% endif %}>Región de Ñuble</option>
-        </select>
-    </div>
+<link rel="stylesheet" href="{% static 'css/style_graficos.css'%}">
 
-    <div class="grafico-container">    
-    {{ grafico_html|safe }}
-    </div>
+<body class="background-container">
+<div class="container py-5">
+    <div class="row justify-content-end">
+        <div class="col-lg-8"> 
+            <div class="custom-card">
+                <h2 class="text-center mb-4" >Resultados Índice de Desarrollo Personal y Social</h2>
+                <h3 class="text-center mb-4" >2° Medio 2023</h3>
+                <label for="nom_reg_rbd" class="form-label">Selecciona una región:</label>
+                <select id="nom_reg_rbd" class="form-select" name="nom_reg_rbd" onchange="filtrarPorRegion()">
+                    <option value="METROPOLITANA DE SANTIAGO" {% if nom_reg_rbd == "METROPOLITANA DE SANTIAGO" %}selected{% endif %} >Región Metropolitana</option>
+                    <option value="DE TARAPACÁ" {% if nom_reg_rbd == "DE TARAPACÁ" %} selected {% endif %}>Región de Tarapacá</option>
+                    <option value="DE ANTOFAGASTA"{% if nom_reg_rbd == "DE ANTOFAGASTA" %} selected {% endif %}>Región de Antofagasta </option>
+                    <option value="DE ATACAMA"{% if nom_reg_rbd == "DE ATACAMA" %} selected {% endif %}>Región de Atacama </option>
+                    <option value="DE COQUIMBO"{% if nom_reg_rbd == "DE COQUIMBO" %} selected {% endif %}>Región de Coquimbo</option>
+                    <option value="DE VALPARAÍSO"{% if nom_reg_rbd == "DE VALPARAÍSO" %} selected {% endif %}>Región de Valparaíso</option>
+                    <option value="DEL LIBERTADOR BERNARDO O"{% if nom_reg_rbd == "DEL LIBERTADOR BERNARDO O" %} selected {% endif %}>Región del Libertador 
+                        Gral. Bernardo OHiggins</option>
+                    <option value="DEL MAULE"{% if nom_reg_rbd == "DEL MAULE" %} selected {% endif %}>Región del Maule </option>
+                    <option value="DEL BIOBÍO"{% if nom_reg_rbd == "DEL BIOBÍO" %} selected {% endif %}>Región del Biobío</option>
+                    <option value="DE LA ARAUCANÍA"{% if nom_reg_rbd == "DE LA ARAUCANÍA" %} selected {% endif %}>Región de la Araucanía</option>
+                    <option value="DE LOS LAGOS"{% if nom_reg_rbd == "DE LOS LAGOS" %} selected {% endif %}>Región de Los Lagos</option>
+                    <option value="DE AYSÉN DEL GENERAL CARL"{% if nom_reg_rbd == "DE AYSÉN DEL GENERAL CARL" %} selected {% endif %}>Región de Aysén del Gral. 
+                        Carlos Ibáñez del Campo</option>
+                    <option value="DE MAGALLANES Y DE LA ANT"{% if nom_reg_rbd == "DE MAGALLANES Y DE LA ANT" %} selected {% endif %}>Región de Magallanes y 
+                        de la Antártica Chilena </option>
+                    <option value="DE LOS RÍOS"{% if nom_reg_rbd == "DE LOS RÍOS" %} selected {% endif %}>Región de Los Ríos</option>
+                    <option value="DE ARICA Y PARINACOTA"{% if nom_reg_rbd == "DE ARICA Y PARINACOTA" %} selected {% endif %}>Región de Arica y Parinacota</option>
+                    <option value="DE ÑUBLE"{% if nom_reg_rbd == "DE ÑUBLE" %} selected {% endif %}>Región de Ñuble</option>
+                </select>
+            </div>
 
-    <div class="grafico-container">    
-        {{ grafico_zona|safe }}
-    </div>
+            <div class="custom-card grafico-container align-end"  >
+                {{ grafico_html|safe }}
+            </div>
 
-    <div>
-        <div class="resultados">
-            <p> El valor de Chi-cuadrado es {{ chi2_zona }} lo que da un valor de significancia de {{p_zona}}, pudiendo concluir que 
-            {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
-            {% else %}<strong>Las diferencias no son significativas.</strong></p>
-            {% endif %}
+            <div class="custom-card grafico-container align-end">
+                {{ grafico_zona|safe }}
+            </div>
+
+            <div class="custom-card resultados-container">
+                <p> El valor de Chi-cuadrado es {{ chi2_zona }} lo que da un valor de significancia de {{p_zona}}, pudiendo concluir que 
+                    {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
+                    {% else %}<strong>Las diferencias no son significativas.</strong></p>
+                    {% endif %}
+            </div>
+
+            <div class="custom-card grafico-container align-end">
+                {{ grafico_dependencia|safe }}
+            </div>
+
+            <div class="custom-card resultados-container">
+                <p>El valor de Chi-cuadrado es {{ chi2_depe }} (p = {{ p_depe }}). 
+                {% if p_depe < 0.05 %}<strong>Diferencias significativas (p < 0.05).</strong>
+                {% else %}<strong>Diferencias no significativas.</strong>{% endif %}
+                </p>
+            </div>
+
+            <div class="custom-card grafico-container align-end">
+                {{ grafico_provincia|safe }}
+            </div>
+
+            <div class="custom-card resultados-container">
+                <p>El valor de Chi-cuadrado es {{ chi2_pro }} (p = {{ p_pro }}). 
+                {% if p_pro < 0.05 %}<strong>Diferencias significativas (p < 0.05).</strong>
+                {% else %}<strong>Diferencias no significativas.</strong>{% endif %}
+                </p>
+            </div>
+
         </div>
     </div>
-        
-        
-    <div class="grafico-container">    
-        {{ grafico_dependencia|safe }}
-    </div>
-    <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_depe }} lo que da un valor de significancia de {{p_depe}}, pudiendo concluir que 
-        {% if p_depe < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %}
-    </div>
+</div>
 
-    <div class="grafico-container">    
-        {{ grafico_provincia|safe }}
-    </div>
-
-    <div class="resultados">
-        <p> El valor de Chi-cuadrado es {{ chi2_pro }} lo que da un valor de significancia de {{p_pro}}, pudiendo concluir que 
-        {% if p_pro < 0.05 %}<strong>Las diferencias son estadísticamente significativas (p < 0.05).</strong>
-        {% else %}<strong>Las diferencias no son significativas.</strong></p>
-        {% endif %}
-    </div>
-    <script>
-        function filtrarPorRegion() {
-            var nom_reg_rbd = document.getElementById("nom_reg_rbd").value;
-            window.location.href = "?nom_reg_rbd=" + nom_reg_rbd;
-        }
-    
-        // Mantener seleccionada la región actual
-        document.getElementById("nom_reg_rbd").value = "{{ nom_reg_rbd }}";
-
-    
-    </script>
+<script>
+    function filtrarPorRegion() {
+        const region = document.getElementById("nom_reg_rbd").value;
+        window.location.href = `?nom_reg_rbd=${region}`;
+    }
+    document.getElementById("nom_reg_rbd").addEventListener("change", filtrarPorRegion);
+</script>
 </body>
 
 {% endblock %}
