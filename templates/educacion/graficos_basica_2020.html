@@ -20,10 +20,10 @@
         height: auto;
     }
     /* Alineación del contenido interno a la derecha style="max-width: 100%; height: auto;" */
-    .align-center {
+    .align-end {
         display: flex;
         flex-direction: column;
-        align-items:center;
+        align-items:flex-end;
     }
     
     .plotly-graph-div {
@@ -32,15 +32,13 @@
         height: auto !important;
     }
 </style>
-<link rel="stylesheet" href="{% static 'css/style_graficos.css' %}">
-
 <body class="background-container"> 
     <div class="container py-5">
-        <div class="row justify-content-center">
+        <div class="row justify-content-end">
             <div class="col-lg-8">
                 <div class="custom-card">
                     <h2 style="text-align: center;">Gráficos de matrículas</h2>
-                    <h2 style="text-align: center;">Enseñanza Básica 2020</h2>
+                    <h4 style="text-align: center;">Enseñanza Básica 2020</h4>
 
                     <label for="region" class="pt-2">Selecciona una región:</label>
                     <select id="region" name="NOM_REG_RBD_A" onchange="filtrarPorRegion()">
@@ -66,15 +64,15 @@
                     </select>
                 </div>
 
-                <div class="custom-card grafico-container align-center">    
+                <div class="custom-card grafico-container align-end">    
                 {{ grafico_html|safe }}
                 </div>
 
-                <div class="custom-card grafico-container align-center">    
+                <div class="custom-card grafico-container align-end">    
                 {{ grafico_dependencia_html|safe }}
                 </div>
 
-                <div class="custom-card grafico-container align-center">    
+                <div class="custom-card grafico-container align-end">    
                     {{ grafico_tipo_html|safe }}
                 </div>
             </div>
