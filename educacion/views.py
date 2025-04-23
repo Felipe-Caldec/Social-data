@@ -120,9 +120,12 @@ def grafico_matricula_parvulo_2021 (request):
 
     datos = matricula_parvulo.objects.filter(agno=2021, gen_alu__in= [1, 2])
     
+    total_nacional = datos.count()
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
+
+    total_regional = datos.count()
 
     datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m', 'nivel1')
     df = pd.DataFrame(datos)
@@ -133,6 +136,7 @@ def grafico_matricula_parvulo_2021 (request):
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
     df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rural_estab']).size().reset_index(name='Cantidad')
@@ -179,7 +183,8 @@ def grafico_matricula_parvulo_2021 (request):
         plot_bgcolor='white', # fondo del grafico
         bargap=0.2, 
         bargroupgap=0.1,  
-        autosize= True
+        autosize= True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
 ### **Gráfico 2: Distribución género segun dependencia**
@@ -361,6 +366,9 @@ def grafico_matricula_parvulo_2021 (request):
                                                     'p_nivel': round(p_nivel, 4),
                                                     'v_cramer_tipo': round(v_cramer_tipo,2),
                                                     'v_cramer_nivel': round(v_cramer_nivel,2),
+                                                    'conteo_genero': conteo_genero,
+                                                    'total_regional': total_regional,
+                                                    'total_nacional': total_nacional,
                                                     'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2022(request):
@@ -398,15 +406,16 @@ def grafico_matricula_parvulo_2022(request):
         6:"Transición mayor"
     }
 
-
-    # Obtener la región seleccionada desde la URL (por defecto muestra todos)
     region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2022, gen_alu__in= [1, 2])
+
+    total_nacional = datos.count()
     
-    # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
+    
+    total_regional = datos.count()
 
     datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
@@ -417,6 +426,7 @@ def grafico_matricula_parvulo_2022(request):
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
     df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rural_estab']).size().reset_index(name='Cantidad')
@@ -440,15 +450,15 @@ def grafico_matricula_parvulo_2022(request):
         df_filtrado = conteo[conteo['Zona'] == zona]
         if zona == 'Urbano':
             color_relleno = 'skyblue'
-            color_borde = 'deepskyblue'  # Más oscuro que skyblue
+            color_borde = 'deepskyblue'  
         else: 
             color_relleno = 'salmon'
             color_borde = 'indianred' 
         fig.add_trace(go.Bar(
             x=df_filtrado['Género'],
             y=df_filtrado['Porcentaje'],
-            name=zona,  # Esto agrupará las barras por zona
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
+            name=zona,  
+            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"), 
             textposition='auto',
             marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
@@ -461,10 +471,11 @@ def grafico_matricula_parvulo_2022(request):
         yaxis=dict(title="Porcentaje", ticksuffix="%", range=[0, 100], gridcolor='lightgray',
                    zerolinecolor='lightgray'),
         xaxis_title="Género",
-        plot_bgcolor='white', # fondo del grafico
+        plot_bgcolor='white',
         bargap=0.2, 
         bargroupgap=0.1,  
-        autosize= True
+        autosize= True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5),
     )
 ### **Gráfico 2: Distribución género segun dependencia**
 
@@ -595,8 +606,7 @@ def grafico_matricula_parvulo_2022(request):
         showlegend=True,
         autosize=True,
         height=650,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.4, # y posiciona las leyendas
-                    xanchor="center", x=0.5) 
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
     grafico_genero_zona_html = fig.to_html()
@@ -637,6 +647,9 @@ def grafico_matricula_parvulo_2022(request):
                                                     'p_nivel': round(p_nivel, 4),
                                                     'v_cramer_tipo': round(v_cramer_tipo,2),
                                                     'v_cramer_nivel': round(v_cramer_nivel,2),
+                                                    'conteo_genero': conteo_genero,
+                                                    'total_regional': total_regional,
+                                                    'total_nacional': total_nacional,
                                                     'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2023(request):
@@ -678,10 +691,14 @@ def grafico_matricula_parvulo_2023(request):
     region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2023, gen_alu__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
+    
+    total_regional= datos.count()
 
     datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
@@ -693,6 +710,7 @@ def grafico_matricula_parvulo_2023(request):
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
     df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rural_estab']).size().reset_index(name='Cantidad')
@@ -915,6 +933,9 @@ def grafico_matricula_parvulo_2023(request):
                                                     'p_nivel': round(p_nivel, 4),
                                                     'v_cramer_tipo': round(v_cramer_tipo,2),
                                                     'v_cramer_nivel': round(v_cramer_nivel,2),
+                                                    'conteo_genero': conteo_genero,
+                                                    'total_regional': total_regional,
+                                                    'total_nacional': total_nacional,
                                                     'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2024(request):
@@ -955,10 +976,13 @@ def grafico_matricula_parvulo_2024(request):
     region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2024, gen_alu__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
@@ -968,6 +992,8 @@ def grafico_matricula_parvulo_2024(request):
     df['dependencia'] = df['dependencia'].map(categorias_dependencia)
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
     df['nivel1'] = df['nivel1'].map(categorias_nivel)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rural_estab']).size().reset_index(name='Cantidad')
@@ -1192,6 +1218,9 @@ def grafico_matricula_parvulo_2024(request):
                                                         'p_nivel': round(p_nivel, 4),
                                                         'v_cramer_tipo': round(v_cramer_tipo,2),
                                                         'v_cramer_nivel': round(v_cramer_nivel,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
                                                         'region': region_seleccionada})
 
 def grafico_matricula_parvulo_2020(request):
@@ -1233,10 +1262,13 @@ def grafico_matricula_parvulo_2020(request):
     region_seleccionada = request.GET.get('nom_reg_a_estab', "RM")
 
     datos = matricula_parvulo.objects.filter(agno=2020, gen_alu__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(nom_reg_a_estab=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('gen_alu','rural_estab','dependencia','cod_ense2_m','nivel1')
     df = pd.DataFrame(datos)
@@ -1247,6 +1279,7 @@ def grafico_matricula_parvulo_2020(request):
     df['cod_ense2_m'] = df['cod_ense2_m'].map(categorias_tipo)
     df['nivel1'] = df['nivel1'].map(categorias_nivel)
 
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rural_estab']).size().reset_index(name='Cantidad')
@@ -1471,6 +1504,9 @@ def grafico_matricula_parvulo_2020(request):
                                                         'p_nivel': round(p_nivel, 4),
                                                         'v_cramer_tipo': round(v_cramer_tipo,2),
                                                         'v_cramer_nivel': round(v_cramer_nivel,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
                                                         'region': region_seleccionada})
 
 ######################### GRAFICOS MATRICULA SEGUN AÑO #################################
@@ -1637,10 +1673,13 @@ def grafico_matricula_basica_2023 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
@@ -1650,6 +1689,8 @@ def grafico_matricula_basica_2023 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
     df['ENS'] = df['ENS'].map(tipo2_enseñanza)
+
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
 
      # Contar cuántos hay de cada género
@@ -1822,10 +1863,13 @@ def grafico_matricula_basica_2023 (request):
 
 
     return render(request, 'educacion/graficos_basica_2023.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_enseñanza_html': grafico_genero_ens_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_enseñanza_html': grafico_genero_ens_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_basica_2022 (request):
 
@@ -1862,10 +1906,12 @@ def grafico_matricula_basica_2022 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
+    total_nacional = datos.count()
+    
     # Obtener datos del modelo, filtrando por región si se especifica
-  
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
@@ -1876,6 +1922,7 @@ def grafico_matricula_basica_2022 (request):
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
     df['ENS'] = df['ENS'].map(tipo2_enseñanza)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -2018,9 +2065,12 @@ def grafico_matricula_basica_2022 (request):
     grafico_genero_tipo_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_basica_2022.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_basica_2021 (request):
 
@@ -2057,10 +2107,12 @@ def grafico_matricula_basica_2021 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
+    total_nacional= datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
@@ -2070,6 +2122,8 @@ def grafico_matricula_basica_2021 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
     df['ENS'] = df['ENS'].map(tipo2_enseñanza)
+
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -2211,9 +2265,12 @@ def grafico_matricula_basica_2021 (request):
     grafico_genero_tipo_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_basica_2021.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_basica_2020 (request):
 
@@ -2250,10 +2307,12 @@ def grafico_matricula_basica_2020 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_basica.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2','ENS')
     df = pd.DataFrame(datos)
@@ -2263,6 +2322,8 @@ def grafico_matricula_basica_2020 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
     df['ENS'] = df['ENS'].map(tipo2_enseñanza)
+
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -2405,9 +2466,12 @@ def grafico_matricula_basica_2020 (request):
     grafico_genero_tipo_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_basica_2020.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 
 #########################    GRAFICOS MATRICULA MEDIA  ########################################### 
@@ -2443,10 +2507,13 @@ def grafico_matricula_media_2023 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2023, GEN_ALU__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
     df = pd.DataFrame(datos)
@@ -2456,6 +2523,7 @@ def grafico_matricula_media_2023 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -2624,12 +2692,15 @@ def grafico_matricula_media_2023 (request):
 
 
     return render(request, 'educacion/graficos_media_2023.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_zona_tipo_html,
-                                                      'chi2_tipo':round(chi2_tipo,2),
-                                                      'p_tipo': round(p_tipo,2),
-                                                      'va_cramer': round(va_cramer,2),
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_zona_tipo_html,
+                                                        'chi2_tipo':round(chi2_tipo,2),
+                                                        'p_tipo': round(p_tipo,2),
+                                                        'va_cramer': round(va_cramer,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_media_2022 (request):
 
@@ -2662,10 +2733,13 @@ def grafico_matricula_media_2022 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2022, GEN_ALU__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
     df = pd.DataFrame(datos)
@@ -2675,6 +2749,7 @@ def grafico_matricula_media_2022 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -2841,12 +2916,15 @@ def grafico_matricula_media_2022 (request):
     va_cramer = v_cramer(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2022.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_zona_tipo_html,
-                                                      'chi2_tipo':round(chi2_tipo,2),
-                                                      'p_tipo': round(p_tipo,2),
-                                                      'va_cramer':round(va_cramer,2),
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_zona_tipo_html,
+                                                        'chi2_tipo':round(chi2_tipo,2),
+                                                        'p_tipo': round(p_tipo,2),
+                                                        'va_cramer':round(va_cramer,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_media_2021 (request):
 
@@ -2879,9 +2957,12 @@ def grafico_matricula_media_2021 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2021, GEN_ALU__in= [1, 2])
+
+    total_nacional = datos.count()
     
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
     df = pd.DataFrame(datos)
@@ -2892,6 +2973,7 @@ def grafico_matricula_media_2021 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -3056,12 +3138,15 @@ def grafico_matricula_media_2021 (request):
     va_cramer = v_cramer(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2021.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_zona_tipo_html,
-                                                      'chi2_tipo':round(chi2_tipo,2),
-                                                      'p_tipo':round(p_tipo,2),
-                                                      'va_cramer': round(va_cramer,2),
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_zona_tipo_html,
+                                                        'chi2_tipo':round(chi2_tipo,2),
+                                                        'p_tipo':round(p_tipo,2),
+                                                        'va_cramer': round(va_cramer,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_media_2020 (request):
 
@@ -3095,10 +3180,13 @@ def grafico_matricula_media_2020 (request):
     region_seleccionada = request.GET.get('NOM_REG_RBD_A', "RM")
 
     datos = matricula_media.objects.filter(AGNO=2020, GEN_ALU__in= [1, 2])
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(NOM_REG_RBD_A=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('GEN_ALU','RURAL_RBD','COD_DEPE2','COD_ENSE2')
     df = pd.DataFrame(datos)
@@ -3109,6 +3197,7 @@ def grafico_matricula_media_2020 (request):
     df['COD_DEPE2'] = df['COD_DEPE2'].map(categorias_dependencia)
     df['COD_ENSE2'] = df['COD_ENSE2'].map(tipo_enseñanza)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['GEN_ALU','RURAL_RBD']).size().reset_index(name='Cantidad')
@@ -3272,12 +3361,15 @@ def grafico_matricula_media_2020 (request):
     va_cramer = v_cramer(tabla_tipo)
 
     return render(request, 'educacion/graficos_media_2020.html', {'grafico_html': grafico_genero_zona_html,
-                                                      'grafico_dependencia_html': grafico_genero_dependencia_html,
-                                                      'grafico_tipo_html': grafico_zona_tipo_html,
-                                                      'chi2_tipo': round(chi2_tipo,2),
-                                                      'p_tipo': round(p_tipo,2),
-                                                      'va_cramer': round(va_cramer,2),
-                                                      'region': region_seleccionada})
+                                                        'grafico_dependencia_html': grafico_genero_dependencia_html,
+                                                        'grafico_tipo_html': grafico_zona_tipo_html,
+                                                        'chi2_tipo': round(chi2_tipo,2),
+                                                        'p_tipo': round(p_tipo,2),
+                                                        'va_cramer': round(va_cramer,2),
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 #########################    GRAFICOS MATRICULA SUPERIOR  ########################################### 
 
@@ -3292,10 +3384,13 @@ def grafico_matricula_superior_2024 (request):
     region_seleccionada = request.GET.get('region_sede', "Metropolitana")
 
     datos = matricula_superior.objects.filter(cat_periodo=2024).exclude(rango_edad='Sin Información')
+
+    total_nacional= datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(region_sede=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
                         'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
@@ -3303,6 +3398,8 @@ def grafico_matricula_superior_2024 (request):
     df = pd.DataFrame(datos)
 
     df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
@@ -3359,61 +3456,86 @@ def grafico_matricula_superior_2024 (request):
     totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
-    fig2 = go.Figure()
+    fig2 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por tipo de institucion - Mujeres', 
+            'Distribución por tipo de institucion - Hombres'
+        ]
+    )
 
-    for tipo in conteo_tipo['Tipo Institucion'].unique():
-        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
-        fig2.add_trace(go.Bar(
-            x =df_filtrado['Género'],
-            y = df_filtrado['Porcentaje'],
-            name= tipo, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_tipo = conteo_tipo[conteo_tipo['Género'] == genero]
+        
+        fig2.add_trace(
+            go.Pie(
+                labels=df_tipo['Tipo Institucion'],
+                values=df_tipo['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig2.update_layout(
-        barmode='group',
-        title="Gráfico género según Tipo de Institución",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje",  range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
+
 
 ### Gráfico 3: Distribución género segun tipo de enseñanza
 
     conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
-    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+    conteo_area.columns = ['Género','Area Conocimiento', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    totales_por_area = conteo_area.groupby('Género')['Cantidad'].transform('sum')
     conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
 
-    fig3 = go.Figure()
+    fig3 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por área de conocimiento - Mujeres', 
+            'Distribución por área de conocimiento - Hombres'
+        ]
+    )
 
-    for area in conteo_area['Area Conocimiento'].unique():
-        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
-        fig3.add_trace(go.Bar(
-            x =df_filtrado['Genero'],
-            y = df_filtrado['Porcentaje'],
-            name= area, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_area['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_area = conteo_area[conteo_area['Género'] == genero]
+        
+        fig3.add_trace(
+            go.Pie(
+                labels=df_area['Area Conocimiento'],
+                values=df_area['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig3.update_layout(
-        barmode='group',
-        title="Gráfico género según tipo",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 60]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
     grafico_genero_edad_html = fig.to_html()
@@ -3421,9 +3543,12 @@ def grafico_matricula_superior_2024 (request):
     grafico_genero_area_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_superior_2024.html', {'grafico_html': grafico_genero_edad_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_area_html': grafico_genero_area_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_area_html': grafico_genero_area_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_superior_2023 (request):
 
@@ -3437,10 +3562,13 @@ def grafico_matricula_superior_2023 (request):
     region_seleccionada = request.GET.get('region_sede', "Metropolitana")
 
     datos = matricula_superior.objects.filter(cat_periodo=2023).exclude(rango_edad='Sin Información')
+
+    total_nacional= datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(region_sede=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
                         'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
@@ -3448,6 +3576,8 @@ def grafico_matricula_superior_2023 (request):
     df = pd.DataFrame(datos)
 
     df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
@@ -3459,28 +3589,40 @@ def grafico_matricula_superior_2023 (request):
 
 
 # Crear la figura manualmente
-    fig = go.Figure()
+    fig = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por dependencia - Mujeres', 
+            'Distribución por dependencia - Hombres'
+        ]
+    )
 
-    for edad in conteo['Edad'].unique():
-        df_filtrado = conteo[conteo['Edad'] == edad]
-        fig.add_trace(go.Bar(
-            x=df_filtrado['Género'],
-            y=df_filtrado['Porcentaje'],
-            name=edad,  # Esto agrupará las barras por zona
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
-            textposition='auto'
-        ))
+# Filtrar por género
+    generos = conteo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_genero = conteo[conteo['Género'] == genero]
+        
+        fig.add_trace(
+            go.Pie(
+                labels=df_genero['Edad'],
+                values=df_genero['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig.update_layout(
-        barmode='group',  
-        title="Gráfico género según edad",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por edades según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.2,  
-        bargroupgap=0.1,  
-        autosize= True
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
 ### Gráfico 2: Distribución género segun dependencia
@@ -3492,61 +3634,86 @@ def grafico_matricula_superior_2023 (request):
     totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
-    fig2 = go.Figure()
+    fig2 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por tipo de institucion - Mujeres', 
+            'Distribución por tipo de institucion - Hombres'
+        ]
+    )
 
-    for tipo in conteo_tipo['Tipo Institucion'].unique():
-        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
-        fig2.add_trace(go.Bar(
-            x =df_filtrado['Género'],
-            y = df_filtrado['Porcentaje'],
-            name= tipo, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_tipo = conteo_tipo[conteo_tipo['Género'] == genero]
+        
+        fig2.add_trace(
+            go.Pie(
+                labels=df_tipo['Tipo Institucion'],
+                values=df_tipo['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig2.update_layout(
-        barmode='group',
-        title="Gráfico género según Tipo de Institución",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
+
 
 ### Gráfico 3: Distribución género segun tipo de enseñanza
 
     conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
-    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+    conteo_area.columns = ['Género','Area Conocimiento', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    totales_por_area = conteo_area.groupby('Género')['Cantidad'].transform('sum')
     conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
 
-    fig3 = go.Figure()
+    fig3 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por área de conocimiento - Mujeres', 
+            'Distribución por área de conocimiento - Hombres'
+        ]
+    )
 
-    for area in conteo_area['Area Conocimiento'].unique():
-        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
-        fig3.add_trace(go.Bar(
-            x =df_filtrado['Genero'],
-            y = df_filtrado['Porcentaje'],
-            name= area, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_area = conteo_area[conteo_area['Género'] == genero]
+        
+        fig3.add_trace(
+            go.Pie(
+                labels=df_area['Area Conocimiento'],
+                values=df_area['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig3.update_layout(
-        barmode='group',
-        title="Gráfico género según tipo",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Zona",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
     grafico_genero_edad_html = fig.to_html()
@@ -3554,9 +3721,12 @@ def grafico_matricula_superior_2023 (request):
     grafico_genero_area_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_superior_2023.html', {'grafico_html': grafico_genero_edad_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_area_html': grafico_genero_area_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_area_html': grafico_genero_area_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_superior_2022 (request):
 
@@ -3569,10 +3739,13 @@ def grafico_matricula_superior_2022 (request):
     region_seleccionada = request.GET.get('region_sede', "Metropolitana")
 
     datos = matricula_superior.objects.filter(cat_periodo=2022).exclude(rango_edad='Sin Información')
+
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(region_sede=region_seleccionada)
+    total_regional = datos.count()
 
     datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
                         'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
@@ -3580,6 +3753,8 @@ def grafico_matricula_superior_2022 (request):
     df = pd.DataFrame(datos)
 
     df['gen_alu'] = df['gen_alu'].map(categorias_genero)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
@@ -3591,30 +3766,41 @@ def grafico_matricula_superior_2022 (request):
 
 
 # Crear la figura manualmente
-    fig = go.Figure()
-
-    for edad in conteo['Edad'].unique():
-        df_filtrado = conteo[conteo['Edad'] == edad]
-        fig.add_trace(go.Bar(
-            x=df_filtrado['Género'],
-            y=df_filtrado['Porcentaje'],
-            name=edad,  # Esto agrupará las barras por zona
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
-            textposition='auto'
-        ))
-
-    fig.update_layout(
-        barmode='group',  
-        title="Gráfico género según edad",
-        title_font= dict(weight="bold"),
-        title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.2,  
-        bargroupgap=0.1,  
-        autosize= True
+    fig = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por dependencia - Mujeres', 
+            'Distribución por dependencia - Hombres'
+        ]
     )
 
+# Filtrar por género
+    generos = conteo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_genero = conteo[conteo['Género'] == genero]
+        
+        fig.add_trace(
+            go.Pie(
+                labels=df_genero['Edad'],
+                values=df_genero['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
+
+    fig.update_layout(
+        title_text="Distribución por edades según género",
+        title_font=dict(weight="bold"),
+        title_x=0.5,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
+    )
 ### Gráfico 2: Distribución género segun dependencia
 
     conteo_tipo = df.groupby(['gen_alu','tipo_inst_1']).size().reset_index(name='Cantidad')
@@ -3624,61 +3810,86 @@ def grafico_matricula_superior_2022 (request):
     totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
-    fig2 = go.Figure()
+    fig2 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por tipo de institucion - Mujeres', 
+            'Distribución por tipo de institucion - Hombres'
+        ]
+    )
 
-    for tipo in conteo_tipo['Tipo Institucion'].unique():
-        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
-        fig2.add_trace(go.Bar(
-            x =df_filtrado['Género'],
-            y = df_filtrado['Porcentaje'],
-            name= tipo, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_tipo = conteo_tipo[conteo_tipo['Género'] == genero]
+        
+        fig2.add_trace(
+            go.Pie(
+                labels=df_tipo['Tipo Institucion'],
+                values=df_tipo['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig2.update_layout(
-        barmode='group',
-        title="Gráfico género según Tipo de Institución",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
+
 
 ### Gráfico 3: Distribución género segun tipo de enseñanza
 
     conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
-    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+    conteo_area.columns = ['Género','Area Conocimiento', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    totales_por_area = conteo_area.groupby('Género')['Cantidad'].transform('sum')
     conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
 
-    fig3 = go.Figure()
+    fig3 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por área de conocimiento - Mujeres', 
+            'Distribución por área de conocimiento - Hombres'
+        ]
+    )
 
-    for area in conteo_area['Area Conocimiento'].unique():
-        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
-        fig3.add_trace(go.Bar(
-            x =df_filtrado['Genero'],
-            y = df_filtrado['Porcentaje'],
-            name= area, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_area = conteo_area[conteo_area['Género'] == genero]
+        
+        fig3.add_trace(
+            go.Pie(
+                labels=df_area['Area Conocimiento'],
+                values=df_area['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig3.update_layout(
-        barmode='group',
-        title="Gráfico género según tipo",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Zona",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
     grafico_genero_edad_html = fig.to_html()
@@ -3686,9 +3897,12 @@ def grafico_matricula_superior_2022 (request):
     grafico_genero_area_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_superior_2022.html', {'grafico_html': grafico_genero_edad_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_area_html': grafico_genero_area_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_area_html': grafico_genero_area_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_superior_2021 (request):
 
@@ -3701,10 +3915,12 @@ def grafico_matricula_superior_2021 (request):
     region_seleccionada = request.GET.get('region_sede', "Metropolitana")
 
     datos = matricula_superior.objects.filter(cat_periodo=2021).exclude(rango_edad='Sin Información')
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(region_sede=region_seleccionada)
+    total_regional= datos.count()
 
     datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
                         'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
@@ -3712,6 +3928,8 @@ def grafico_matricula_superior_2021 (request):
     df = pd.DataFrame(datos)
 
     df['gen_alu']= df['gen_alu'].map(categorias_genero)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
@@ -3723,28 +3941,40 @@ def grafico_matricula_superior_2021 (request):
 
 
 # Crear la figura manualmente
-    fig = go.Figure()
+    fig = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por dependencia - Mujeres', 
+            'Distribución por dependencia - Hombres'
+        ]
+    )
 
-    for edad in conteo['Edad'].unique():
-        df_filtrado = conteo[conteo['Edad'] == edad]
-        fig.add_trace(go.Bar(
-            x=df_filtrado['Género'],
-            y=df_filtrado['Porcentaje'],
-            name=edad,  # Esto agrupará las barras por zona
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
-            textposition='auto'
-        ))
+# Filtrar por género
+    generos = conteo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_genero = conteo[conteo['Género'] == genero]
+        
+        fig.add_trace(
+            go.Pie(
+                labels=df_genero['Edad'],
+                values=df_genero['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig.update_layout(
-        barmode='group',  
-        title="Gráfico género según edad",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por edades según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.2,  
-        bargroupgap=0.1,  
-        autosize= True
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
 ### Gráfico 2: Distribución género segun dependencia
@@ -3756,61 +3986,86 @@ def grafico_matricula_superior_2021 (request):
     totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
-    fig2 = go.Figure()
+    fig2 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por tipo de institucion - Mujeres', 
+            'Distribución por tipo de institucion - Hombres'
+        ]
+    )
 
-    for tipo in conteo_tipo['Tipo Institucion'].unique():
-        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
-        fig2.add_trace(go.Bar(
-            x =df_filtrado['Género'],
-            y = df_filtrado['Porcentaje'],
-            name= tipo, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_tipo = conteo_tipo[conteo_tipo['Género'] == genero]
+        
+        fig2.add_trace(
+            go.Pie(
+                labels=df_tipo['Tipo Institucion'],
+                values=df_tipo['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig2.update_layout(
-        barmode='group',
-        title="Gráfico género según Tipo de Institución",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
+
 
 ### Gráfico 3: Distribución género segun tipo de enseñanza
 
     conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
-    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+    conteo_area.columns = ['Género','Area Conocimiento', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    totales_por_area = conteo_area.groupby('Género')['Cantidad'].transform('sum')
     conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
 
-    fig3 = go.Figure()
+    fig3 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por área de conocimiento - Mujeres', 
+            'Distribución por área de conocimiento - Hombres'
+        ]
+    )
 
-    for area in conteo_area['Area Conocimiento'].unique():
-        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
-        fig3.add_trace(go.Bar(
-            x =df_filtrado['Genero'],
-            y = df_filtrado['Porcentaje'],
-            name= area, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_area = conteo_area[conteo_area['Género'] == genero]
+        
+        fig3.add_trace(
+            go.Pie(
+                labels=df_area['Area Conocimiento'],
+                values=df_area['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig3.update_layout(
-        barmode='group',
-        title="Gráfico género según tipo",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Zona",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
     grafico_genero_edad_html = fig.to_html()
@@ -3818,9 +4073,12 @@ def grafico_matricula_superior_2021 (request):
     grafico_genero_area_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_superior_2021.html', {'grafico_html': grafico_genero_edad_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_area_html': grafico_genero_area_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_area_html': grafico_genero_area_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 def grafico_matricula_superior_2020 (request):
 
@@ -3833,10 +4091,12 @@ def grafico_matricula_superior_2020 (request):
     region_seleccionada = request.GET.get('region_sede', "Metropolitana")
 
     datos = matricula_superior.objects.filter(cat_periodo=2020).exclude(rango_edad='Sin Información')
+    total_nacional = datos.count()
     
     # Obtener datos del modelo, filtrando por región si se especifica
     if region_seleccionada:
         datos = datos.filter(region_sede=region_seleccionada)
+    total_regional= datos.count()
 
     datos= datos.values('cat_periodo','region_sede','gen_alu','rango_edad','tipo_inst_1','tipo_inst_2',
                         'nomb_inst','modalidad','jornada','nivel_global','area_conocimiento','dur_estudio_carr',
@@ -3844,6 +4104,8 @@ def grafico_matricula_superior_2020 (request):
     df = pd.DataFrame(datos)
 
     df['gen_alu'] = df['gen_alu'].map(categorias_genero)
+
+    conteo_genero = df['gen_alu'].value_counts().to_dict()
 
      # Contar cuántos hay de cada género
     conteo = df.groupby(['gen_alu','rango_edad']).size().reset_index(name='Cantidad')
@@ -3855,28 +4117,40 @@ def grafico_matricula_superior_2020 (request):
 
 
 # Crear la figura manualmente
-    fig = go.Figure()
+    fig = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por edad - Mujeres', 
+            'Distribución por edad - Hombres'
+        ]
+    )
 
-    for edad in conteo['Edad'].unique():
-        df_filtrado = conteo[conteo['Edad'] == edad]
-        fig.add_trace(go.Bar(
-            x=df_filtrado['Género'],
-            y=df_filtrado['Porcentaje'],
-            name=edad,  # Esto agrupará las barras por zona
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),  # Muestra los valores en las barras
-            textposition='auto'
-        ))
+# Filtrar por género
+    generos = conteo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_genero = conteo[conteo['Género'] == genero]
+        
+        fig.add_trace(
+            go.Pie(
+                labels=df_genero['Edad'],
+                values=df_genero['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig.update_layout(
-        barmode='group',  
-        title="Gráfico género según edad",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por edades según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.2,  
-        bargroupgap=0.1,  
-        autosize= True
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
 ### Gráfico 2: Distribución género segun dependencia
@@ -3888,71 +4162,99 @@ def grafico_matricula_superior_2020 (request):
     totales_por_tipo = conteo_tipo.groupby('Género')['Cantidad'].transform('sum')
     conteo_tipo['Porcentaje'] = (conteo_tipo['Cantidad'] / totales_por_tipo) * 100
 
-    fig2 = go.Figure()
+# Crear la figura manualmente
+    fig2 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por tipo de institucion - Mujeres', 
+            'Distribución por tipo de institucion - Hombres'
+        ]
+    )
 
-    for tipo in conteo_tipo['Tipo Institucion'].unique():
-        df_filtrado = conteo_tipo[conteo_tipo['Tipo Institucion'] == tipo]
-        fig2.add_trace(go.Bar(
-            x =df_filtrado['Género'],
-            y = df_filtrado['Porcentaje'],
-            name= tipo, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_tipo['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_tipo = conteo_tipo[conteo_tipo['Género'] == genero]
+        
+        fig2.add_trace(
+            go.Pie(
+                labels=df_tipo['Tipo Institucion'],
+                values=df_tipo['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig2.update_layout(
-        barmode='group',
-        title="Gráfico género según Tipo de Institución",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Tipo de Institucion según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Género",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5) 
     )
 
 ### Gráfico 3: Distribución género segun tipo de enseñanza
 
     conteo_area = df.groupby(['gen_alu','area_conocimiento']).size().reset_index(name='Cantidad')
-    conteo_area.columns = ['Genero','Area Conocimiento', 'Cantidad']
+    conteo_area.columns = ['Género','Area Conocimiento', 'Cantidad']
 
 # Calcular porcentaje total
-    totales_por_area = conteo_area.groupby('Genero')['Cantidad'].transform('sum')
+    totales_por_area = conteo_area.groupby('Género')['Cantidad'].transform('sum')
     conteo_area['Porcentaje'] = (conteo_area['Cantidad'] / totales_por_area) * 100
 
-    fig3 = go.Figure()
+    fig3 = make_subplots(
+        rows=2, cols=1, 
+        specs=[[{'type': 'domain'}], [{'type': 'domain'}]],
+        subplot_titles=[
+            'Distribución por área de conocimiento - Mujeres', 
+            'Distribución por área de conocimiento - Hombres'
+        ]
+    )
 
-    for area in conteo_area['Area Conocimiento'].unique():
-        df_filtrado = conteo_area[conteo_area['Area Conocimiento'] == area]
-        fig3.add_trace(go.Bar(
-            x =df_filtrado['Genero'],
-            y = df_filtrado['Porcentaje'],
-            name= area, 
-            text=df_filtrado['Porcentaje'].apply(lambda x: f"{x:.2f}%"),
-            textposition= 'auto'
-            ))
+# Filtrar por género
+    generos = conteo_area['Género'].unique()
+
+    for i, genero in enumerate(generos):
+        df_area = conteo_area[conteo_area['Género'] == genero]
+        
+        fig3.add_trace(
+            go.Pie(
+                labels=df_area['Area Conocimiento'],
+                values=df_area['Cantidad'],
+                name=genero,
+                textinfo='percent',
+                hoverinfo='percent+value'
+            ),
+            row=i+1, col=1
+        )
 
     fig3.update_layout(
-        barmode='group',
-        title="Gráfico género según tipo",
-        title_font= dict(weight="bold"),
+        title_text="Distribución por Área de Conocimiento según género",
+        title_font=dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Porcentaje", range=[0, 100]),
-        xaxis_title="Zona",
-        bargap=0.1,
-        bargroupgap=0.1,
-        autosize= True,
-    )
+        showlegend=True,
+        autosize=True,
+        height=650,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.6, xanchor="right", x=0.5)
+        )
 
     grafico_genero_edad_html = fig.to_html()
     grafico_genero_tipo_html = fig2.to_html()
     grafico_genero_area_html = fig3.to_html()
 
     return render(request, 'educacion/graficos_superior_2020.html', {'grafico_html': grafico_genero_edad_html,
-                                                      'grafico_tipo_html': grafico_genero_tipo_html,
-                                                      'grafico_area_html': grafico_genero_area_html,
-                                                      'region': region_seleccionada})
+                                                        'grafico_tipo_html': grafico_genero_tipo_html,
+                                                        'grafico_area_html': grafico_genero_area_html,
+                                                        'conteo_genero': conteo_genero,
+                                                        'total_regional': total_regional,
+                                                        'total_nacional': total_nacional,
+                                                        'region': region_seleccionada})
 
 
 ############################  RESULTADOS SIMCE   #############################################
@@ -4169,11 +4471,13 @@ def grafico_resultados_idps22_4 (request):
     region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
 
     datos = resultados_simce_idps.objects.filter(grado='4', agno=2022)
+
+    total_nacional = datos.count()
     # Obtener datos del modelo, filtrando por región si se especifica
   
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
-
+    total_regional = datos.count()
     datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom',
                         'nom_pro_rbd')
     df = pd.DataFrame(datos)
@@ -4183,7 +4487,6 @@ def grafico_resultados_idps22_4 (request):
 
     # Agrupar por región y tipo de indicador (ind), calculando el promedio de 'prom'
     df_promedios = df.groupby(['nom_reg_rbd', 'ind'])['prom'].mean().reset_index()
-
 
     fig = go.Figure()
     
@@ -4321,20 +4624,22 @@ def grafico_resultados_idps22_4 (request):
     v_cramer_pro= v_cramer(tabla_pro)
 
     return render(request, 'educacion/graficos_idps22_4.html', {'grafico_html': grafico_html,
-                                                    'grafico_zona': grafico_zona,
-                                                    'grafico_dependencia':grafico_dependencia,
-                                                    'grafico_provincia':grafico_provincia,
-                                                    'nom_reg_rbd': region_seleccionada,
-                                                    'chi2_zona': round(chi2_zona,2),
-                                                    'chi2_depe':round(chi2_depe,2),
-                                                    'chi2_pro':round(chi2_pro,2),
-                                                    'p_zona':round(p_zona,2),
-                                                    'p_depe':round(p_depe,2),
-                                                    'p_pro':round(p_pro,2),
-                                                    'v_cramer_pro':round(v_cramer_pro,2),
-                                                    'v_cramer_depe':round(v_cramer_depe,2),
-                                                    'v_cramer_zona':round(v_cramer_zona,2)})
-                
+                                                                'grafico_zona': grafico_zona,
+                                                                'grafico_dependencia':grafico_dependencia,
+                                                                'grafico_provincia':grafico_provincia,
+                                                                'nom_reg_rbd': region_seleccionada,
+                                                                'chi2_zona': round(chi2_zona,2),
+                                                                'chi2_depe':round(chi2_depe,2),
+                                                                'chi2_pro':round(chi2_pro,2),
+                                                                'p_zona':round(p_zona,2),
+                                                                'p_depe':round(p_depe,2),
+                                                                'p_pro':round(p_pro,2),
+                                                                'v_cramer_pro':round(v_cramer_pro,2),
+                                                                'v_cramer_depe':round(v_cramer_depe,2),
+                                                                'v_cramer_zona':round(v_cramer_zona,2),
+                                                                'total_nacional': total_nacional,
+                                                                'total_regional': total_regional})
+                            
 def grafico_resultados_idps22_2(request):
 
     regiones = {
@@ -4387,10 +4692,12 @@ def grafico_resultados_idps22_2(request):
 
     # Filtrar los datos 
     datos = resultados_simce_idps.objects.filter(grado='2', agno=2022)
+    total_nacional= datos.count()
     
     # Filtrar por región
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
+    total_regional= datos.count()
 
     # Convertir los datos a DataFrame
     datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom',
@@ -4528,18 +4835,20 @@ def grafico_resultados_idps22_2(request):
     chi2_pro, p_pro, _, _ = chi2_contingency(tabla_pro)
 
     return render(request, 'educacion/graficos_idps22_2.html', {
-        'grafico_html': grafico_html,
-        'grafico_zona': grafico_zona,
-        'grafico_dependencia':grafico_dependencia,
-        'grafico_provincia':grafico_provincia,
-        'nom_reg_rbd': region_seleccionada,
-        'chi2_zona': round(chi2_zona, 2),
-        'p_zona': round(p_zona, 2),
-        'chi2_depe': round(chi2_depe, 2),
-        'p_depe': round(p_depe, 2),
-        'chi2_pro':round(chi2_pro,2),
-        'p_pro':round(p_pro,2),
-    })
+                                                                'grafico_html': grafico_html,
+                                                                'grafico_zona': grafico_zona,
+                                                                'grafico_dependencia':grafico_dependencia,
+                                                                'grafico_provincia':grafico_provincia,
+                                                                'nom_reg_rbd': region_seleccionada,
+                                                                'chi2_zona': round(chi2_zona, 2),
+                                                                'p_zona': round(p_zona, 2),
+                                                                'chi2_depe': round(chi2_depe, 2),
+                                                                'p_depe': round(p_depe, 2),
+                                                                'chi2_pro':round(chi2_pro,2),
+                                                                'p_pro':round(p_pro,2),
+                                                                'total_nacional': total_nacional,
+                                                                'total_regional': total_regional
+                                                            })
 
 def grafico_resultados_idps23_4 (request):
 
@@ -4594,10 +4903,12 @@ def grafico_resultados_idps23_4 (request):
     region_seleccionada = request.GET.get('nom_reg_rbd', "METROPOLITANA DE SANTIAGO")
 
     datos = resultados_simce_idps.objects.filter(grado='4', agno=2023)
+    total_nacional = datos.count()
     # Obtener datos del modelo, filtrando por región si se especifica
   
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
+    total_regional= datos.count()
 
     datos= datos.values('agno', 'grado', 'nom_reg_rbd','cod_depe2','cod_rural_rbd','dim','ind','prom',
                         'nom_pro_rbd')
@@ -4760,7 +5071,9 @@ def grafico_resultados_idps23_4 (request):
                                                                 'p_pro':round(p_pro,2),
                                                                 'v_cramer_pro':round(v_cramer_pro,2),
                                                                 'v_cramer_depe':round(v_cramer_depe,2),
-                                                                'v_cramer_zona':round(v_cramer_zona,2)})
+                                                                'v_cramer_zona':round(v_cramer_zona,2),
+                                                                'total_nacional': total_nacional,
+                                                                'total_regional': total_regional})
 
 def grafico_resultados_idps23_2(request):
 
@@ -4814,10 +5127,12 @@ def grafico_resultados_idps23_2(request):
 
     # Filtrar los datos
     datos = resultados_simce_idps.objects.filter(grado='2', agno=2023)
+    total_nacional= datos.count()
     
     # Filtrar por región 
     if region_seleccionada:
         datos = datos.filter(nom_reg_rbd=region_seleccionada)
+    total_regional= datos.count()
 
     datos = datos.values('agno', 'grado', 'nom_reg_rbd', 'cod_depe2', 'cod_rural_rbd', 'dim', 'ind', 'prom',
                          'nom_pro_rbd')
@@ -4956,18 +5271,20 @@ def grafico_resultados_idps23_2(request):
     chi2_pro, p_pro, _, _ = chi2_contingency(tabla_pro)
 
     return render(request, 'educacion/graficos_idps23_2.html', {
-        'grafico_html': grafico_html,
-        'grafico_zona': grafico_zona,
-        'grafico_dependencia':grafico_dependencia,
-        'grafico_provincia':grafico_provincia,
-        'nom_reg_rbd': region_seleccionada,
-        'chi2_zona': round(chi2_zona, 2),
-        'p_zona': round(p_zona, 2),
-        'chi2_depe': round(chi2_depe, 2),
-        'p_depe': round(p_depe, 2),
-        'chi2_pro':round(chi2_pro,2),
-        'p_pro':round(p_pro,2),
-    })
+                                                                'grafico_html': grafico_html,
+                                                                'grafico_zona': grafico_zona,
+                                                                'grafico_dependencia':grafico_dependencia,
+                                                                'grafico_provincia':grafico_provincia,
+                                                                'nom_reg_rbd': region_seleccionada,
+                                                                'chi2_zona': round(chi2_zona, 2),
+                                                                'p_zona': round(p_zona, 2),
+                                                                'chi2_depe': round(chi2_depe, 2),
+                                                                'p_depe': round(p_depe, 2),
+                                                                'chi2_pro':round(chi2_pro,2),
+                                                                'p_pro':round(p_pro,2),
+                                                                'total_nacional': total_nacional,
+                                                                'total_regional': total_regional
+                                                            })
 
 
 ############################  DOTACION DOCENTE  #############################################
@@ -5258,9 +5575,11 @@ def grafico_rendimiento_21 (request):
     region_seleccionada = request.GET.get("COD_REG_RBD", "13")
 
     datos = rendimiento_academico.objects.filter(AGNO = 2021)
+    total_nacional= datos.count()
 
     if region_seleccionada:
         datos = datos.filter(COD_REG_RBD=region_seleccionada)
+    total_regional= datos.count()
 
     datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
                          "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
@@ -5269,6 +5588,8 @@ def grafico_rendimiento_21 (request):
 
     df['GEN_ALU']= df['GEN_ALU'].map(categorias_genero)
     df['RURAL_RBD']= df['RURAL_RBD'].map(categorias_zona)
+
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
 ## Grafico promedio por genero
     
@@ -5279,12 +5600,19 @@ def grafico_rendimiento_21 (request):
 
     for genero in prom_por_genero['Género'].unique():
         df_filtrado = prom_por_genero[prom_por_genero['Género']==genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred' 
         fig.add_trace(go.Bar(
             x=df_filtrado['Género'],
             y=df_filtrado['Promedio'],
             text= df_filtrado['Promedio'].apply(lambda x: f"{x: .2f}"),
             textposition= 'outside',
-            name= genero
+            name= genero,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
     fig.update_layout(
@@ -5292,7 +5620,7 @@ def grafico_rendimiento_21 (request):
         xaxis_title= 'Género',
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis= dict(title='Promedio', range=[0,7]),
+        yaxis= dict(title='Promedio', range=[0,7], gridcolor='lightgray',zerolinecolor='lightgray'),
         bargap= 0.2,
         bargroupgap= 0.1,
         autosize= True,
@@ -5308,12 +5636,19 @@ def grafico_rendimiento_21 (request):
 
     for genero in asis_por_genero['Género'].unique():
         df_filtrado = asis_por_genero[asis_por_genero['Género']==genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred' 
         fig2.add_trace(go.Bar(
             x= df_filtrado['Género'],
             y= df_filtrado['Asistencia'],
-            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}%"),
             textposition= 'outside',
-            name= genero
+            name= genero,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
     fig2.update_layout(
@@ -5321,7 +5656,7 @@ def grafico_rendimiento_21 (request):
         xaxis_title= 'Género',
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis= dict(title= "Promedio Asistencia", range=[0,100]),
+        yaxis= dict(title= "Promedio Asistencia",ticksuffix='%', range=[0,100]),
         bargap= 0.2,
         bargroupgap= 0.1,
         autosize= True,
@@ -5338,12 +5673,19 @@ def grafico_rendimiento_21 (request):
 
     for zona in prom_por_zona['Zona'].unique():
         df_filtrado= prom_por_zona[prom_por_zona['Zona']== zona]
+        if zona == 'Urbano':
+            color_relleno = 'bisque'
+            color_borde = 'darkgoldenrod'  
+        else: 
+            color_relleno = 'lightgreen'
+            color_borde = 'seagreen' 
         fig3.add_trace(go.Bar(
             x= df_filtrado['Zona'],
             y= df_filtrado['Promedio'],
             text= df_filtrado['Promedio'].apply(lambda x: f"{x: .2f}"),
             textposition= 'outside',
-            name= zona
+            name= zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
     fig3.update_layout(
@@ -5368,12 +5710,19 @@ def grafico_rendimiento_21 (request):
 
     for zona in asis_por_zona['Zona'].unique():
         df_filtrado = asis_por_zona[asis_por_zona['Zona']== zona]
+        if zona == 'Urbano':
+            color_relleno = 'bisque'
+            color_borde = 'darkgoldenrod'
+        else: 
+            color_relleno = 'lightgreen'
+            color_borde = 'seagreen' 
         fig4.add_trace(go.Bar(
             x= df_filtrado['Zona'],
             y= df_filtrado['Asistencia'],
-            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}%"),
             textposition= 'outside',
-            name= zona
+            name= zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
     fig4.update_layout(
@@ -5381,7 +5730,7 @@ def grafico_rendimiento_21 (request):
         xaxis_title= 'Zona',
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis= dict(title= 'Promedio Asistencia', tickformat='.2f', range=[0,100]),
+        yaxis= dict(title= 'Promedio Asistencia', ticksuffix='%', range=[0,100]),
         bargap= 0.2,
         bargroupgap= 0.1,
         autosize= True,
@@ -5398,6 +5747,9 @@ def grafico_rendimiento_21 (request):
                                                                     'grafico_prom_gen': grafico_prom_gen,
                                                                     'grafico_asis_gen': grafico_asis_gen,
                                                                     'grafico_prom_ru': grafico_prom_ru,
+                                                                    "total_nacional": total_nacional,
+                                                                    "total_regional":total_regional,
+                                                                    'conteo_genero':conteo_genero,
                                                                     'grafico_asis_ru': grafico_asis_ru})
 
 def grafico_rendimiento_22 (request):
@@ -5414,9 +5766,11 @@ def grafico_rendimiento_22 (request):
     region_seleccionada = request.GET.get("COD_REG_RBD", "13")
 
     datos = rendimiento_academico.objects.filter(AGNO=2022)
+    total_nacional= datos.count()
 
     if region_seleccionada:
         datos = datos.filter(COD_REG_RBD = region_seleccionada)
+    total_regional= datos.count()
 
     datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
                          "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
@@ -5426,6 +5780,8 @@ def grafico_rendimiento_22 (request):
     df['GEN_ALU'] = df['GEN_ALU'].map(categorias_genero)
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_zona)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
+
 ## Grafico promedio por genero
 
     prom_por_genero = df.groupby("GEN_ALU")["PROM_GRAL"].mean().reset_index()
@@ -5433,27 +5789,34 @@ def grafico_rendimiento_22 (request):
 
     fig = go.Figure()
 
-    for genero in prom_por_genero["Género"].unique():
-        df_filtrado = prom_por_genero[prom_por_genero['Género']== genero]
+    for genero in prom_por_genero['Género'].unique():
+        df_filtrado = prom_por_genero[prom_por_genero['Género']==genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred' 
         fig.add_trace(go.Bar(
-            x= df_filtrado["Género"],
-            y= df_filtrado["Promedio"],
-            text= df_filtrado["Promedio"].apply(lambda x: f"{x: .2f}"),
-            textposition= "outside",
-            name= genero
+            x=df_filtrado['Género'],
+            y=df_filtrado['Promedio'],
+            text= df_filtrado['Promedio'].apply(lambda x: f"{x: .2f}"),
+            textposition= 'outside',
+            name= genero,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
-    
+
     fig.update_layout(
-        title="Promedio Académico por Género", 
-        xaxis_title="Género",
+        title= 'Promedio Académico por Género',
+        xaxis_title= 'Género',
         title_font= dict(weight="bold"),
-        title_x=0.5, 
-        yaxis=dict(title="Promedio", range=[0, 7]),
-        bargap=0.2,
-        bargroupgap=0.1,
-        template="simple_white",
-        autosize=True,
-        height=400
+        title_x=0.5,
+        yaxis= dict(title='Promedio', range=[0,7], gridcolor='lightgray',zerolinecolor='lightgray'),
+        bargap= 0.2,
+        bargroupgap= 0.1,
+        autosize= True,
+        height= 400,
+        template= 'simple_white'
     )
 
 ## Grafico asistencia por genero
@@ -5465,12 +5828,19 @@ def grafico_rendimiento_22 (request):
 
     for genero in asis_por_genero["Género"].unique():
         df_filtrado = asis_por_genero[asis_por_genero["Género"]== genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred'
         fig2.add_trace(go.Bar(
             x= df_filtrado["Género"],
             y= df_filtrado["Asistencia"],
-            text = df_filtrado["Asistencia"].apply(lambda x: f"{x: .2f}"),
+            text = df_filtrado["Asistencia"].apply(lambda x: f"{x: .2f}%"),
             textposition= "outside",
-            name = genero
+            name = genero,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
     fig2.update_layout(
@@ -5478,7 +5848,7 @@ def grafico_rendimiento_22 (request):
             xaxis_title="Zona",
             title_font= dict(weight="bold"),
             title_x=0.5,
-            yaxis=dict(title="Promedio Asistencia", range=[0, 100]),
+            yaxis=dict(title="Promedio Asistencia", ticksuffix='%', range=[0, 100]),
             bargap=0.2,
             bargroupgap=0.1,
             template="simple_white",
@@ -5495,25 +5865,33 @@ def grafico_rendimiento_22 (request):
 
     for zona in prom_por_zona["Zona"].unique():
         df_filtrado = prom_por_zona[prom_por_zona["Zona"]== zona]
+        if zona == 'Urbano':    
+            color_relleno = 'bisque'
+            color_borde = 'darkgoldenrod'
+        else: 
+            color_relleno = 'lightgreen'
+            color_borde = 'seagreen' 
         fig3.add_trace(go.Bar(
             x= df_filtrado["Zona"],
             y= df_filtrado["Promedio"],
             text= df_filtrado["Promedio"].apply(lambda x: f"{x: .2f}"), 
             textposition= "outside",
-            name = zona
+            name = zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
 
-        fig3.update_layout(
+    fig3.update_layout(
             title="Promedio Académico por Zona",
             xaxis_title="Zona",
-            title_font= dict(weight="bold"),
-            title_x=0.5,
             yaxis=dict(title="Promedio", range=[0, 7]),
+            title_font= dict(weight="bold"),
+            title_x=0.5, 
             bargap=0.2,
             bargroupgap=0.1,
             template="simple_white",
             autosize=True,
-            height=400
+            height=400,
+
         )
 
 ## Grafico asistencia por rural
@@ -5525,12 +5903,19 @@ def grafico_rendimiento_22 (request):
 
     for zona in asis_por_zona['Zona'].unique():
         df_filtrado = asis_por_zona[asis_por_zona['Zona']==zona]
+        if zona == 'Urbano':    
+            color_relleno = 'bisque'
+            color_borde = 'darkgoldenrod'
+        else: 
+            color_relleno = 'lightgreen'
+            color_borde = 'seagreen' 
         fig4.add_trace(go.Bar(
             x= df_filtrado['Zona'],
             y= df_filtrado['Asistencia'],
-            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}"),
+            text= df_filtrado['Asistencia'].apply(lambda x: f"{x: .2f}%"),
             textposition= 'outside',
-            name= zona 
+            name= zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5)) 
         ))
     
     fig4.update_layout(
@@ -5538,7 +5923,7 @@ def grafico_rendimiento_22 (request):
             xaxis_title="Zona",
             title_font= dict(weight="bold"),
             title_x=0.5,
-            yaxis=dict(title="Promedio Asistencia", range=[0, 100]),
+            yaxis=dict(title="Promedio Asistencia", ticksuffix='%', range=[0, 100]),
             bargap=0.2,
             bargroupgap=0.1,
             template="simple_white",
@@ -5555,6 +5940,9 @@ def grafico_rendimiento_22 (request):
                                                                     'grafico_prom_gen': grafico_prom_gen,
                                                                     'grafico_asis_gen': grafico_asis_gen,
                                                                     'grafico_prom_ru': grafico_prom_ru,
+                                                                    "total_nacional": total_nacional,
+                                                                    "total_regional":total_regional,
+                                                                    'conteo_genero':conteo_genero,
                                                                     'grafico_asis_ru': grafico_asis_ru})
 
 def grafico_rendimiento_23 (request):
@@ -5571,9 +5959,11 @@ def grafico_rendimiento_23 (request):
     region_seleccionada = request.GET.get("COD_REG_RBD", "13")
 
     datos = rendimiento_academico.objects.filter(AGNO=2023)
+    total_nacional= datos.count()
 
     if region_seleccionada:
         datos = datos.filter(COD_REG_RBD = region_seleccionada)
+    total_regional= datos.count()
 
     datos = datos.values("COD_DEPE", "RURAL_RBD","GEN_ALU","COD_JOR", "PROM_GRAL", 
                          "ASISTENCIA", "SIT_FIN_R", "EDAD_ALU", "COD_REG_RBD")
@@ -5583,6 +5973,7 @@ def grafico_rendimiento_23 (request):
     df["GEN_ALU"] = df["GEN_ALU"].map(categorias_genero)
     df['RURAL_RBD'] = df['RURAL_RBD'].map(categorias_zona)
 
+    conteo_genero = df['GEN_ALU'].value_counts().to_dict()
 
 ## Grafico promedio por genero
 
@@ -5592,12 +5983,19 @@ def grafico_rendimiento_23 (request):
     fig = go.Figure()
     for genero in prom_por_genero["Género"].unique():
         df_filtrado = prom_por_genero[prom_por_genero["Género"] == genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred'
         fig.add_trace(go.Bar(
             x= df_filtrado["Género"], 
             y=df_filtrado["Promedio"],
             text=df_filtrado["Promedio"].apply(lambda x: f"{x:.2f}"),
             textposition='outside', 
-            name= genero
+            name= genero,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         )) 
         
     fig.update_layout(
@@ -5605,7 +6003,7 @@ def grafico_rendimiento_23 (request):
         xaxis_title="Género",
         title_font= dict(weight="bold"),
         title_x=0.5, 
-        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 7]),
+        yaxis=dict(title="Promedio", range=[0, 7]),
         bargap=0.2,
         bargroupgap=0.1,
         template="simple_white",
@@ -5622,12 +6020,19 @@ def grafico_rendimiento_23 (request):
 
     for genero in asis_por_genero['Género'].unique():
         df_filtrado = asis_por_genero[asis_por_genero['Género']== genero]
+        if genero == 'Femenino':
+            color_relleno = 'skyblue'
+            color_borde = 'deepskyblue'  
+        else: 
+            color_relleno = 'salmon'
+            color_borde = 'indianred'
         fig2.add_trace(go.Bar(
                     x=df_filtrado["Género"], 
                     y=df_filtrado["Asistencia"], 
-                    text= df_filtrado["Asistencia"].apply(lambda x: f"{x:.2f}"),
+                    text= df_filtrado["Asistencia"].apply(lambda x: f"{x:.2f}%"),
                     textposition= 'outside',
                     name=genero,
+                    marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))
         ))
         
     fig2.update_layout(
@@ -5635,7 +6040,7 @@ def grafico_rendimiento_23 (request):
         xaxis_title="Género",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Promedio", ticksuffix='%', range=[0, 100]),
         bargap=0.2,
         bargroupgap=0.1,
         template="simple_white",
@@ -5652,12 +6057,19 @@ def grafico_rendimiento_23 (request):
 
     for zona in prom_por_zona["Zona"].unique():
         df_filtrado = prom_por_zona[prom_por_zona['Zona'] == zona]
+        if zona == 'Urbano':    
+            color_relleno = 'bisque'
+            color_borde = 'darkgoldenrod'
+        else: 
+            color_relleno = 'lightgreen'
+            color_borde = 'seagreen' 
         fig3.add_trace(go.Bar(
             x=df_filtrado["Zona"],  # Solo esa zona
             y=df_filtrado["Promedio"],
-            text=df_filtrado["Promedio"].apply(lambda x: f"{x:.2f}"),
+            text=df_filtrado["Promedio"].apply(lambda x: f"{x:.2f}%"),
             textposition='outside',
-            name=zona
+            name=zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5)) 
         ))
 
     fig3.update_layout(
@@ -5665,7 +6077,7 @@ def grafico_rendimiento_23 (request):
         xaxis_title="Zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 7]),
+        yaxis=dict(title="Promedio", range=[0, 7]),
         bargap=0.2,
         bargroupgap=0.1,
         template="simple_white",
@@ -5687,7 +6099,8 @@ def grafico_rendimiento_23 (request):
             y=df_filtrado["Asistencia"],
             text= df_filtrado["Asistencia"].apply(lambda x: f"{x: .2f}"),
             textposition= "outside", 
-            name= zona 
+            name= zona,
+            marker=dict(color=color_relleno,line=dict(color=color_borde, width=1.5))  
         ))
     
     fig4.update_layout(
@@ -5695,7 +6108,7 @@ def grafico_rendimiento_23 (request):
         xaxis_title="Zona",
         title_font= dict(weight="bold"),
         title_x=0.5,
-        yaxis=dict(title="Promedio", tickformat=".2f", range=[0, 100]),
+        yaxis=dict(title="Promedio", ticksuffix='%', range=[0, 100]),
         bargap=0.2,
         bargroupgap=0.1,
         template="simple_white",
@@ -5712,4 +6125,7 @@ def grafico_rendimiento_23 (request):
                                                                       "grafico_asis_gen": grafico_asis_gen,
                                                                       "grafico_prom_ru": grafico_prom_ru,
                                                                       "grafico_asis_ru": grafico_asis_ru,
+                                                                      "total_nacional": total_nacional,
+                                                                      "total_regional":total_regional,
+                                                                      'conteo_genero':conteo_genero,
                                                                       "region": region_seleccionada})

@@ -31,16 +31,85 @@
         max-width: 100% !important;
         height: auto !important;
     }
+    .grafico-container ul {
+    list-style-type: none;
+    padding-left: 0;
+    }
+    .grafico-container li {
+    margin-bottom: 6px;
+    }
+    .resumen-fijo {
+    position: fixed;
+    top: 100px;
+    left: 30px;
+    width: 300px;
+    z-index: 1000;
+    }
+    @media (max-width: 991px) {
+    .resumen-fijo {
+        position: static;     
+        width: 100%;         
+        top: auto;
+        left: auto;
+        margin-bottom: 20px;  
+        }
+    }
+
+    @media (max-width: 768px) {
+    .svg-container {
+        width: 500px !important;
+    }
+    }
+    @media (min-width: 992px) and (max-width: 1100px){
+    .svg-container {
+        width: 600px !important;
+    }
+    }
 </style>
 <body class="background-container"> 
     <div class="container py-5">
         <div class="row justify-content-end">
+            <div class="col-lg-4">
+                <div class="custom-card grafico-container align-start resumen-fijo">
+                    <h3 style="text-align: center;">Resumen de casos</h3>
+                    <ul>
+                        <li>
+                        <div class="col-12 mb-3">
+                            <div class="resumen-box text-center p-2">
+                                <strong>Total nacional</strong>
+                                <div>{{ total_nacional }}</div>
+                            </div>
+                        </div></li>
+                        <li>
+                        <div class="col-12 mb-3">
+                            <div class="text-center p-2">
+                                <strong>Total en la región {{ region_seleccionada }}</strong>
+                                <div>{{ total_regional }}</div>
+                            </div>
+                        </div></li>
+                        <li>
+                            <div class="col-12">
+                                <div class="text-center p-2">
+                                    <strong>Casos por género</strong>
+                                    <div class="mt-2">
+                                        {% for genero, cantidad in conteo_genero.items %}
+                                            <div class="mb-1">
+                                                {{ genero }}: <span>{{ cantidad }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <div class="col-lg-8">
                 <div class="custom-card">
                     <h2 style="text-align: center;">Gráficos de matrículas</h2>
                     <h4 style="text-align: center;">Enseñanza Básica 2020</h4>
 
-                    <label for="region" class="pt-2">Selecciona una región:</label>
+                    <label for="region" class="pt-2">Selecciona una región</label>
                     <select id="region" name="NOM_REG_RBD_A" onchange="filtrarPorRegion()">
                         <option value="RM" {% if region == "RM" %}selected{% endif %} >Región Metropolitana</option>
                         <option value="TPCA" {% if region == "TPCA" %} selected {% endif %}>Región de Tarapacá</option>
